@@ -1,8 +1,10 @@
-import {Map} from '../Map.js';
-import {Handler} from '../../core/Handler.js';
-import {Draggable} from '../../dom/Draggable.js';
-import {toLatLngBounds as latLngBounds} from '../../geo/LatLngBounds.js';
-import {toBounds} from '../../geometry/Bounds.js';
+import {Map} from '../Map';
+import {Handler} from '../../core/Handler';
+import {Draggable} from '../../dom/Draggable';
+import * as Util from '../../core/Util';
+import * as DomUtil from '../../dom/DomUtil';
+import {toLatLngBounds as latLngBounds} from '../../geo/LatLngBounds';
+import {toBounds} from '../../geometry/Bounds';
 
 /*
  * L.Handler.MapDrag is used to make the map draggable (with panning inertia), enabled by default.
@@ -50,10 +52,10 @@ Map.mergeOptions({
 	maxBoundsViscosity: 0.0
 });
 
-export const Drag = Handler.extend({
-	addHooks() {
+export var Drag = Handler.extend({
+	addHooks: function () {
 		if (!this._draggable) {
-			const map = this._map;
+			var map = this._map;
 
 			this._draggable = new Draggable(map._mapPane, map._container);
 
@@ -71,31 +73,32 @@ export const Drag = Handler.extend({
 				map.whenReady(this._onZoomEnd, this);
 			}
 		}
-		this._map._container.classList.add('leaflet-grab', 'leaflet-touch-drag');
+		DomUtil.addClass(this._map._container, 'leaflet-grab leaflet-touch-drag');
 		this._draggable.enable();
 		this._positions = [];
 		this._times = [];
 	},
 
-	removeHooks() {
-		this._map._container.classList.remove('leaflet-grab', 'leaflet-touch-drag');
+	removeHooks: function () {
+		DomUtil.removeClass(this._map._container, 'leaflet-grab');
+		DomUtil.removeClass(this._map._container, 'leaflet-touch-drag');
 		this._draggable.disable();
 	},
 
-	moved() {
+	moved: function () {
 		return this._draggable && this._draggable._moved;
 	},
 
-	moving() {
+	moving: function () {
 		return this._draggable && this._draggable._moving;
 	},
 
-	_onDragStart() {
-		const map = this._map;
+	_onDragStart: function () {
+		var map = this._map;
 
 		map._stop();
 		if (this._map.options.maxBounds && this._map.options.maxBoundsViscosity) {
-			const bounds = latLngBounds(this._map.options.maxBounds);
+			var bounds = latLngBounds(this._map.options.maxBounds);
 
 			this._offsetLimit = toBounds(
 				this._map.latLngToContainerPoint(bounds.getNorthWest()).multiplyBy(-1),
@@ -117,9 +120,9 @@ export const Drag = Handler.extend({
 		}
 	},
 
-	_onDrag(e) {
+	_onDrag: function (e) {
 		if (this._map.options.inertia) {
-			const time = this._lastTime = +new Date(),
+			var time = this._lastTime = +new Date(),
 			    pos = this._lastPos = this._draggable._absPos || this._draggable._newPos;
 
 			this._positions.push(pos);
@@ -133,31 +136,31 @@ export const Drag = Handler.extend({
 		    .fire('drag', e);
 	},
 
-	_prunePositions(time) {
+	_prunePositions: function (time) {
 		while (this._positions.length > 1 && time - this._times[0] > 50) {
 			this._positions.shift();
 			this._times.shift();
 		}
 	},
 
-	_onZoomEnd() {
-		const pxCenter = this._map.getSize().divideBy(2),
+	_onZoomEnd: function () {
+		var pxCenter = this._map.getSize().divideBy(2),
 		    pxWorldCenter = this._map.latLngToLayerPoint([0, 0]);
 
 		this._initialWorldOffset = pxWorldCenter.subtract(pxCenter).x;
 		this._worldWidth = this._map.getPixelWorldBounds().getSize().x;
 	},
 
-	_viscousLimit(value, threshold) {
+	_viscousLimit: function (value, threshold) {
 		return value - (value - threshold) * this._viscosity;
 	},
 
-	_onPreDragLimit() {
+	_onPreDragLimit: function () {
 		if (!this._viscosity || !this._offsetLimit) { return; }
 
-		const offset = this._draggable._newPos.subtract(this._draggable._startPos);
+		var offset = this._draggable._newPos.subtract(this._draggable._startPos);
 
-		const limit = this._offsetLimit;
+		var limit = this._offsetLimit;
 		if (offset.x < limit.min.x) { offset.x = this._viscousLimit(offset.x, limit.min.x); }
 		if (offset.y < limit.min.y) { offset.y = this._viscousLimit(offset.y, limit.min.y); }
 		if (offset.x > limit.max.x) { offset.x = this._viscousLimit(offset.x, limit.max.x); }
@@ -166,9 +169,9 @@ export const Drag = Handler.extend({
 		this._draggable._newPos = this._draggable._startPos.add(offset);
 	},
 
-	_onPreDragWrap() {
+	_onPreDragWrap: function () {
 		// TODO refactor to be able to adjust map pane position after zoom
-		const worldWidth = this._worldWidth,
+		var worldWidth = this._worldWidth,
 		    halfWidth = Math.round(worldWidth / 2),
 		    dx = this._initialWorldOffset,
 		    x = this._draggable._newPos.x,
@@ -180,8 +183,8 @@ export const Drag = Handler.extend({
 		this._draggable._newPos.x = newX;
 	},
 
-	_onDragEnd(e) {
-		const map = this._map,
+	_onDragEnd: function (e) {
+		var map = this._map,
 		    options = map.options,
 
 		    noInertia = !options.inertia || e.noInertia || this._times.length < 2;
@@ -194,18 +197,18 @@ export const Drag = Handler.extend({
 		} else {
 			this._prunePositions(+new Date());
 
-			const direction = this._lastPos.subtract(this._positions[0]),
-			      duration = (this._lastTime - this._times[0]) / 1000,
-			      ease = options.easeLinearity,
+			var direction = this._lastPos.subtract(this._positions[0]),
+			    duration = (this._lastTime - this._times[0]) / 1000,
+			    ease = options.easeLinearity,
 
-			      speedVector = direction.multiplyBy(ease / duration),
-			      speed = speedVector.distanceTo([0, 0]),
+			    speedVector = direction.multiplyBy(ease / duration),
+			    speed = speedVector.distanceTo([0, 0]),
 
-			      limitedSpeed = Math.min(options.inertiaMaxSpeed, speed),
-			      limitedSpeedVector = speedVector.multiplyBy(limitedSpeed / speed),
+			    limitedSpeed = Math.min(options.inertiaMaxSpeed, speed),
+			    limitedSpeedVector = speedVector.multiplyBy(limitedSpeed / speed),
 
-			      decelerationDuration = limitedSpeed / (options.inertiaDeceleration * ease);
-			let offset = limitedSpeedVector.multiplyBy(-decelerationDuration / 2).round();
+			    decelerationDuration = limitedSpeed / (options.inertiaDeceleration * ease),
+			    offset = limitedSpeedVector.multiplyBy(-decelerationDuration / 2).round();
 
 			if (!offset.x && !offset.y) {
 				map.fire('moveend');
@@ -213,7 +216,7 @@ export const Drag = Handler.extend({
 			} else {
 				offset = map._limitOffset(offset, map.options.maxBounds);
 
-				requestAnimationFrame(() => {
+				Util.requestAnimFrame(function () {
 					map.panBy(offset, {
 						duration: decelerationDuration,
 						easeLinearity: ease,

@@ -1,51 +1,54 @@
-import json from '@rollup/plugin-json';
-import {readFileSync} from 'node:fs';
-import rollupGitVersion from 'rollup-plugin-git-version';
-import {simpleGit} from 'simple-git';
+// Config file for running Rollup
 
-// TODO: Replace this with a regular import when ESLint adds support for import assertions.
-// See: https://rollupjs.org/guide/en/#importing-packagejson
-const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url)));
+import rollupGitVersion from 'rollup-plugin-git-version';
+import json from '@rollup/plugin-json';
+import gitRev from 'git-rev-sync';
+import pkg from '../package.json';
+import {createBanner} from './banner';
+
 const release = process.env.NODE_ENV === 'release';
-const version = await getVersion();
+const watch = process.argv.indexOf('-w') > -1 || process.argv.indexOf('--watch') > -1;
+// Skip the git branch+rev in the banner when doing a release build
+const version = release ? pkg.version : `${pkg.version}+${gitRev.branch()}.${gitRev.short()}`;
 const banner = createBanner(version);
+
+const outro = `var oldL = window.L;
+exports.noConflict = function() {
+	window.L = oldL;
+	return this;
+}
+// Always export us to window global (see #2364)
+window.L = exports;`;
 
 /** @type {import('rollup').RollupOptions} */
 const config = {
-	input: 'src/LeafletWithGlobals.js',
+	input: 'src/Leaflet.js',
 	output: [
 		{
-			file: pkg.exports['.'],
-			format: 'es',
-			banner,
+			file: pkg.main,
+			format: 'umd',
+			name: 'leaflet',
+			banner: banner,
+			outro: outro,
 			sourcemap: true,
-			freeze: false
+			freeze: false,
+			esModule: false
 		}
 	],
 	plugins: [
-		release ? json() : rollupGitVersion(),
+		release ? json() : rollupGitVersion()
 	]
 };
 
+if (!watch) {
+	config.output.push(
+		{
+			file: 'dist/leaflet-src.esm.js',
+			format: 'es',
+			banner: banner,
+			sourcemap: true,
+			freeze: false
+		}
+	);
+}
 export default config;
-
-async function getVersion() {
-	// Skip the git branch+rev in the banner when doing a release build
-	if (release) {
-		return pkg.version;
-	}
-
-	const git = simpleGit();
-	const branch = (await git.branch()).current;
-	const commit = await git.revparse(['--short', 'HEAD']);
-
-	return `${pkg.version}+${branch}.${commit}`;
-}
-
-export function createBanner(version) {
-	return `/* @preserve
- * Leaflet ${version}, a JS library for interactive maps. https://leafletjs.com
- * (c) 2010-${new Date().getFullYear()} Volodymyr Agafonkin, (c) 2010-2011 CloudMade
- */
-`;
-}

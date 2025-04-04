@@ -1,9 +1,9 @@
-import {Polyline} from './Polyline.js';
-import {LatLng} from '../../geo/LatLng.js';
-import * as LineUtil from '../../geometry/LineUtil.js';
-import {Point} from '../../geometry/Point.js';
-import {Bounds} from '../../geometry/Bounds.js';
-import * as PolyUtil from '../../geometry/PolyUtil.js';
+import {Polyline} from './Polyline';
+import {LatLng} from '../../geo/LatLng';
+import * as LineUtil from '../../geometry/LineUtil';
+import {Point} from '../../geometry/Point';
+import {Bounds} from '../../geometry/Bounds';
+import * as PolyUtil from '../../geometry/PolyUtil';
 
 /*
  * @class Polygon
@@ -51,19 +51,19 @@ import * as PolyUtil from '../../geometry/PolyUtil.js';
  * ```
  */
 
-export const Polygon = Polyline.extend({
+export var Polygon = Polyline.extend({
 
 	options: {
 		fill: true
 	},
 
-	isEmpty() {
+	isEmpty: function () {
 		return !this._latlngs.length || !this._latlngs[0].length;
 	},
 
 	// @method getCenter(): LatLng
 	// Returns the center ([centroid](http://en.wikipedia.org/wiki/Centroid)) of the Polygon.
-	getCenter() {
+	getCenter: function () {
 		// throws error when not yet added to map as this center calculation requires projected coordinates
 		if (!this._map) {
 			throw new Error('Must add layer to map before using getCenter()');
@@ -71,8 +71,8 @@ export const Polygon = Polyline.extend({
 		return PolyUtil.polygonCenter(this._defaultShape(), this._map.options.crs);
 	},
 
-	_convertLatLngs(latlngs) {
-		const result = Polyline.prototype._convertLatLngs.call(this, latlngs),
+	_convertLatLngs: function (latlngs) {
+		var result = Polyline.prototype._convertLatLngs.call(this, latlngs),
 		    len = result.length;
 
 		// remove last point if it equals first one
@@ -82,23 +82,23 @@ export const Polygon = Polyline.extend({
 		return result;
 	},
 
-	_setLatLngs(latlngs) {
+	_setLatLngs: function (latlngs) {
 		Polyline.prototype._setLatLngs.call(this, latlngs);
 		if (LineUtil.isFlat(this._latlngs)) {
 			this._latlngs = [this._latlngs];
 		}
 	},
 
-	_defaultShape() {
+	_defaultShape: function () {
 		return LineUtil.isFlat(this._latlngs[0]) ? this._latlngs[0] : this._latlngs[0][0];
 	},
 
-	_clipPoints() {
+	_clipPoints: function () {
 		// polygons need a different clipping algorithm so we redefine that
 
-		let bounds = this._renderer._bounds;
-		const w = this.options.weight,
-		      p = new Point(w, w);
+		var bounds = this._renderer._bounds,
+		    w = this.options.weight,
+		    p = new Point(w, w);
 
 		// increase clip padding by stroke width to avoid stroke on clip edges
 		bounds = new Bounds(bounds.min.subtract(p), bounds.max.add(p));
@@ -113,7 +113,7 @@ export const Polygon = Polyline.extend({
 			return;
 		}
 
-		for (let i = 0, len = this._rings.length, clipped; i < len; i++) {
+		for (var i = 0, len = this._rings.length, clipped; i < len; i++) {
 			clipped = PolyUtil.clipPolygon(this._rings[i], bounds, true);
 			if (clipped.length) {
 				this._parts.push(clipped);
@@ -121,13 +121,13 @@ export const Polygon = Polyline.extend({
 		}
 	},
 
-	_updatePath() {
+	_updatePath: function () {
 		this._renderer._updatePoly(this, true);
 	},
 
 	// Needed by the `Canvas` renderer for interactivity
-	_containsPoint(p) {
-		let inside = false,
+	_containsPoint: function (p) {
+		var inside = false,
 		    part, p1, p2, i, j, k, len, len2;
 
 		if (!this._pxBounds || !this._pxBounds.contains(p)) { return false; }

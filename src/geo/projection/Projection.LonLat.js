@@ -1,6 +1,6 @@
-import {LatLng} from '../LatLng.js';
-import {Bounds} from '../../geometry/Bounds.js';
-import {Point} from '../../geometry/Point.js';
+import {LatLng} from '../LatLng';
+import {Bounds} from '../../geometry/Bounds';
+import {Point} from '../../geometry/Point';
 
 /*
  * @namespace Projection
@@ -15,12 +15,12 @@ import {Point} from '../../geometry/Point.js';
  * `EPSG:4326` and `Simple` CRS.
  */
 
-export const LonLat = {
-	project(latlng) {
+export var LonLat = {
+	project: function (latlng) {
 		return new Point(latlng.lng, latlng.lat);
 	},
 
-	unproject(point) {
+	unproject: function (point) {
 		return new LatLng(point.y, point.x);
 	},
 

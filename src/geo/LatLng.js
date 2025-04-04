@@ -1,6 +1,6 @@
-import * as Util from '../core/Util.js';
-import {Earth} from './crs/CRS.Earth.js';
-import {toLatLngBounds} from './LatLngBounds.js';
+import * as Util from '../core/Util';
+import {Earth} from './crs/CRS.Earth';
+import {toLatLngBounds} from './LatLngBounds';
 
 /* @class LatLng
  * @aka L.LatLng
@@ -17,8 +17,8 @@ import {toLatLngBounds} from './LatLngBounds.js';
  *
  * ```
  * map.panTo([50, 30]);
+ * map.panTo({lon: 30, lat: 50});
  * map.panTo({lat: 50, lng: 30});
- * map.panTo({lat: 50, lon: 30});
  * map.panTo(L.latLng(50, 30));
  * ```
  *
@@ -29,7 +29,7 @@ import {toLatLngBounds} from './LatLngBounds.js';
 
 export function LatLng(lat, lng, alt) {
 	if (isNaN(lat) || isNaN(lng)) {
-		throw new Error(`Invalid LatLng object: (${lat}, ${lng})`);
+		throw new Error('Invalid LatLng object: (' + lat + ', ' + lng + ')');
 	}
 
 	// @property lat: Number
@@ -50,12 +50,12 @@ export function LatLng(lat, lng, alt) {
 LatLng.prototype = {
 	// @method equals(otherLatLng: LatLng, maxMargin?: Number): Boolean
 	// Returns `true` if the given `LatLng` point is at the same position (within a small margin of error). The margin of error can be overridden by setting `maxMargin` to a small number.
-	equals(obj, maxMargin) {
+	equals: function (obj, maxMargin) {
 		if (!obj) { return false; }
 
 		obj = toLatLng(obj);
 
-		const margin = Math.max(
+		var margin = Math.max(
 		        Math.abs(this.lat - obj.lat),
 		        Math.abs(this.lng - obj.lng));
 
@@ -64,26 +64,28 @@ LatLng.prototype = {
 
 	// @method toString(): String
 	// Returns a string representation of the point (for debugging purposes).
-	toString(precision) {
-		return `LatLng(${Util.formatNum(this.lat, precision)}, ${Util.formatNum(this.lng, precision)})`;
+	toString: function (precision) {
+		return 'LatLng(' +
+		        Util.formatNum(this.lat, precision) + ', ' +
+		        Util.formatNum(this.lng, precision) + ')';
 	},
 
 	// @method distanceTo(otherLatLng: LatLng): Number
 	// Returns the distance (in meters) to the given `LatLng` calculated using the [Spherical Law of Cosines](https://en.wikipedia.org/wiki/Spherical_law_of_cosines).
-	distanceTo(other) {
+	distanceTo: function (other) {
 		return Earth.distance(this, toLatLng(other));
 	},
 
 	// @method wrap(): LatLng
 	// Returns a new `LatLng` object with the longitude wrapped so it's always between -180 and +180 degrees.
-	wrap() {
+	wrap: function () {
 		return Earth.wrapLatLng(this);
 	},
 
 	// @method toBounds(sizeInMeters: Number): LatLngBounds
 	// Returns a new `LatLngBounds` object in which each boundary is `sizeInMeters/2` meters apart from the `LatLng`.
-	toBounds(sizeInMeters) {
-		const latAccuracy = 180 * sizeInMeters / 40075017,
+	toBounds: function (sizeInMeters) {
+		var latAccuracy = 180 * sizeInMeters / 40075017,
 		    lngAccuracy = latAccuracy / Math.cos((Math.PI / 180) * this.lat);
 
 		return toLatLngBounds(
@@ -91,7 +93,7 @@ LatLng.prototype = {
 		        [this.lat + latAccuracy, this.lng + lngAccuracy]);
 	},
 
-	clone() {
+	clone: function () {
 		return new LatLng(this.lat, this.lng, this.alt);
 	}
 };
@@ -108,13 +110,12 @@ LatLng.prototype = {
 // @alternative
 // @factory L.latLng(coords: Object): LatLng
 // Expects an plain object of the form `{lat: Number, lng: Number}` or `{lat: Number, lng: Number, alt: Number}` instead.
-//  You can also use `lon` in place of `lng` in the object form.
 
 export function toLatLng(a, b, c) {
 	if (a instanceof LatLng) {
 		return a;
 	}
-	if (Array.isArray(a) && typeof a[0] !== 'object') {
+	if (Util.isArray(a) && typeof a[0] !== 'object') {
 		if (a.length === 3) {
 			return new LatLng(a[0], a[1], a[2]);
 		}

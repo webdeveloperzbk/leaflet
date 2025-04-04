@@ -28,9 +28,9 @@ it is vital to ensure each has a unique and descriptive
 or
 [`title`](/reference.html#marker-title):
 
-<pre><code class="javascript">var marker = L.marker([50.4501, 30.5234],
-  {alt: 'Kyiv'}).addTo(map) // "Kyiv" is the <a href="https://www.w3.org/TR/accname-1.1/#dfn-accessible-name"><em>accessible name</em></a> of this marker
-  .bindPopup('Kyiv, Ukraine is the birthplace of Leaflet!');</code></pre>
+<pre><code class="javascript">var marker = L.marker([55.7558, 37.6176],
+  {alt: 'Moscow'}).addTo(map) // "Moscow" is the <a href="https://www.w3.org/TR/accname-1.1/#dfn-accessible-name"><em>accessible name</em></a> of this marker
+  .bindPopup('Moscow, never sleep!');</code></pre>
 
 Resulting in markers that are discernible to
 [screen reader](https://en.wikipedia.org/wiki/Screen_reader)
@@ -78,8 +78,9 @@ A simple way to achieve this is to use the HTML
 polyfill:
 
 ```html
-<!-- This map is for aesthetic purposes only, and can not be interacted with due to the 'inert' property! -->
+<!-- This map is for aesthetic purposes only, and can not be interacted with! -->
 <div id='decorative-map' inert></div>
+<script src='https://unpkg.com/wicg-inert@latest/dist/inert.min.js'></script>
 ```
 
 ### Utilizing plugins

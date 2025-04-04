@@ -1,68 +1,46 @@
-import {expect} from 'chai';
-import {Circle, Map, Util, CRS, Transformation} from 'leaflet';
-import {createContainer, removeMapContainer} from '../../SpecHelper.js';
+describe('Circle', function () {
+	var map, container, circle;
 
-describe('Circle', () => {
-	let map, container, circle;
-
-	beforeEach(() => {
+	beforeEach(function () {
 		container = container = createContainer();
-		map = new Map(container);
+		map = L.map(container);
 		map.setView([0, 0], 4);
-		circle = new Circle([50, 30], {radius: 200}).addTo(map);
+		circle = L.circle([50, 30], {radius: 200}).addTo(map);
 	});
 
-	afterEach(() => {
+	afterEach(function () {
 		removeMapContainer(map, container);
 	});
 
-	describe('#init', () => {
-		it('uses default radius if not given', () => {
-			const circle = new Circle([0, 0]);
+	describe('#init', function () {
+		it('uses default radius if not given', function () {
+			var circle = L.circle([0, 0]);
 			expect(circle.getRadius()).to.eql(10);
 		});
 
-		it('throws error if radius is NaN', () => {
-			expect(() => {
-				new Circle([0, 0], NaN);
-			}).to.throw('Circle radius cannot be NaN');
+		it('throws error if radius is NaN', function () {
+			expect(function () {
+				L.circle([0, 0], NaN);
+			}).to.throwException('Circle radius cannot be NaN');
 		});
 
 	});
 
-	describe('#getBounds', () => {
-		it('returns bounds', () => {
-			const bounds = circle.getBounds();
+	describe('#getBounds', function () {
+		it('returns bounds', function () {
+			var bounds = circle.getBounds();
 
 			expect(bounds.getSouthWest()).nearLatLng([49.99820, 29.99720]);
 			expect(bounds.getNorthEast()).nearLatLng([50.00179, 30.00279]);
 		});
 	});
 
-	describe('Legacy factory', () => {
-		it('returns same bounds as 1.0 factory', () => {
-			const bounds = circle.getBounds();
+	describe('Legacy factory', function () {
+		it('returns same bounds as 1.0 factory', function () {
+			var bounds = circle.getBounds();
 
 			expect(bounds.getSouthWest()).nearLatLng([49.99820, 29.99720]);
 			expect(bounds.getNorthEast()).nearLatLng([50.00179, 30.00279]);
-		});
-	});
-
-	describe('CRS Simple', () => {
-		it('returns a positive radius if the x axis of L.CRS.Simple is inverted', () => {
-			map.remove();
-
-			const crs = Util.extend(CRS.Simple, {
-				transformation: new Transformation(-1, 0, -1, 0),
-			});
-			map = new Map(container, {
-				crs
-			});
-			map.setView([0, 0], 4);
-
-			const circle = new Circle([0, 0], {radius: 200}).addTo(map);
-
-			expect(circle._radius).to.eql(3200);
 		});
 	});
 });

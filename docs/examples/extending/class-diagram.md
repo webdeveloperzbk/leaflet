@@ -8,16 +8,16 @@ css: "#map {
 ---
 <script type='text/javascript'>
 
-	const bounds = [[0, 0], [1570, 1910]];
+	var bounds = [[0, 0], [1570, 1910]];
 
-	const map = L.map('map', {
+	var map = L.map('map', {
 		crs: L.CRS.Simple,
 		maxZoom: 0,
 		minZoom: -4,
 		maxBounds: bounds
 	});
 
-	const image = L.imageOverlay('class-diagram.png', bounds).addTo(map);
+	var image = L.imageOverlay('class-diagram.png', bounds).addTo(map);
 
 	map.fitBounds(bounds);
 

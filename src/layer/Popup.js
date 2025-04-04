@@ -1,11 +1,11 @@
-import {DivOverlay} from './DivOverlay.js';
-import * as DomEvent from '../dom/DomEvent.js';
-import * as DomUtil from '../dom/DomUtil.js';
-import {Point, toPoint} from '../geometry/Point.js';
-import {Map} from '../map/Map.js';
-import {Layer} from './Layer.js';
-import {Path} from './vector/Path.js';
-import {FeatureGroup} from './FeatureGroup.js';
+import {DivOverlay} from './DivOverlay';
+import * as DomEvent from '../dom/DomEvent';
+import * as DomUtil from '../dom/DomUtil';
+import {Point, toPoint} from '../geometry/Point';
+import {Map} from '../map/Map';
+import {Layer} from './Layer';
+import {Path} from './vector/Path';
+import {FeatureGroup} from './FeatureGroup';
 
 /*
  * @class Popup
@@ -34,14 +34,14 @@ import {FeatureGroup} from './FeatureGroup.js';
  * ```
  * or
  * ```js
- * var popup = L.popup(latlng, {content: '<p>Hello world!<br />This is a nice popup.</p>'})
+ * var popup = L.popup(latlng, {content: '<p>Hello world!<br />This is a nice popup.</p>')
  * 	.openOn(map);
  * ```
  */
 
 
 // @namespace Popup
-export const Popup = DivOverlay.extend({
+export var Popup = DivOverlay.extend({
 
 	// @section
 	// @aka Popup options
@@ -97,10 +97,6 @@ export const Popup = DivOverlay.extend({
 		// Controls the presence of a close button in the popup.
 		closeButton: true,
 
-		// @option closeButtonLabel: String = 'Close popup'
-		// Specifies the 'aria-label' attribute of the close button.
-		closeButtonLabel: 'Close popup',
-
 		// @option autoClose: Boolean = true
 		// Set it to `false` if you want to override the default behavior of
 		// the popup closing when another popup is opened.
@@ -117,19 +113,14 @@ export const Popup = DivOverlay.extend({
 
 		// @option className: String = ''
 		// A custom CSS class name to assign to the popup.
-		className: '',
-
-		// @option trackResize: Boolean = true
-		// Whether the popup shall react to changes in the size of its contents
-		// (e.g. when an image inside the popup loads) and reposition itself.
-		trackResize: true,
+		className: ''
 	},
 
 	// @namespace Popup
 	// @method openOn(map: Map): this
 	// Alternative to `map.openPopup(popup)`.
 	// Adds the popup to the map and closes the previous one.
-	openOn(map) {
+	openOn: function (map) {
 		map = arguments.length ? map : this._source._map; // experimental, not the part of public api
 
 		if (!map.hasLayer(this) && map._popup && map._popup.options.autoClose) {
@@ -140,7 +131,7 @@ export const Popup = DivOverlay.extend({
 		return DivOverlay.prototype.openOn.call(this, map);
 	},
 
-	onAdd(map) {
+	onAdd: function (map) {
 		DivOverlay.prototype.onAdd.call(this, map);
 
 		// @namespace Map
@@ -163,7 +154,7 @@ export const Popup = DivOverlay.extend({
 		}
 	},
 
-	onRemove(map) {
+	onRemove: function (map) {
 		DivOverlay.prototype.onRemove.call(this, map);
 
 		// @namespace Map
@@ -184,8 +175,8 @@ export const Popup = DivOverlay.extend({
 		}
 	},
 
-	getEvents() {
-		const events = DivOverlay.prototype.getEvents.call(this);
+	getEvents: function () {
+		var events = DivOverlay.prototype.getEvents.call(this);
 
 		if (this.options.closeOnClick !== undefined ? this.options.closeOnClick : this._map.options.closePopupOnClick) {
 			events.preclick = this.close;
@@ -198,25 +189,26 @@ export const Popup = DivOverlay.extend({
 		return events;
 	},
 
-	_initLayout() {
-		const prefix = 'leaflet-popup',
-		    container = this._container = DomUtil.create('div', `${prefix} ${this.options.className || ''} leaflet-zoom-animated`);
+	_initLayout: function () {
+		var prefix = 'leaflet-popup',
+		    container = this._container = DomUtil.create('div',
+			prefix + ' ' + (this.options.className || '') +
+			' leaflet-zoom-animated');
 
-		const wrapper = this._wrapper = DomUtil.create('div', `${prefix}-content-wrapper`, container);
-		this._contentNode = DomUtil.create('div', `${prefix}-content`, wrapper);
+		var wrapper = this._wrapper = DomUtil.create('div', prefix + '-content-wrapper', container);
+		this._contentNode = DomUtil.create('div', prefix + '-content', wrapper);
 
 		DomEvent.disableClickPropagation(container);
 		DomEvent.disableScrollPropagation(this._contentNode);
 		DomEvent.on(container, 'contextmenu', DomEvent.stopPropagation);
 
-		this._tipContainer = DomUtil.create('div', `${prefix}-tip-container`, container);
-		this._tip = DomUtil.create('div', `${prefix}-tip`, this._tipContainer);
+		this._tipContainer = DomUtil.create('div', prefix + '-tip-container', container);
+		this._tip = DomUtil.create('div', prefix + '-tip', this._tipContainer);
 
 		if (this.options.closeButton) {
-			const closeButton = this._closeButton = DomUtil.create('a', `${prefix}-close-button`, container);
+			var closeButton = this._closeButton = DomUtil.create('a', prefix + '-close-button', container);
 			closeButton.setAttribute('role', 'button'); // overrides the implicit role=link of <a> elements #7399
-			closeButton.setAttribute('aria-label', this.options.closeButtonLabel);
-
+			closeButton.setAttribute('aria-label', 'Close popup');
 			closeButton.href = '#close';
 			closeButton.innerHTML = '<span aria-hidden="true">&#215;</span>';
 
@@ -225,58 +217,45 @@ export const Popup = DivOverlay.extend({
 				this.close();
 			}, this);
 		}
-
-
-		if (this.options.trackResize) {
-			this._resizeObserver = new ResizeObserver(((entries) => {
-				if (!this._map) { return; }
-				this._containerWidth = entries[0]?.contentRect?.width;
-				this._containerHeight = entries[0]?.contentRect?.height;
-
-				this._updateLayout();
-				this._updatePosition();
-				this._adjustPan();
-			}));
-
-			this._resizeObserver.observe(this._contentNode);
-		}
 	},
 
-	_updateLayout() {
-		const container = this._contentNode,
+	_updateLayout: function () {
+		var container = this._contentNode,
 		    style = container.style;
 
 		style.width = '';
 		style.whiteSpace = 'nowrap';
 
-		style.maxWidth = `${this.options.maxWidth}px`;
-		style.minWidth = `${this.options.minWidth}px`;
+		var width = container.offsetWidth;
+		width = Math.min(width, this.options.maxWidth);
+		width = Math.max(width, this.options.minWidth);
+
+		style.width = (width + 1) + 'px';
 		style.whiteSpace = '';
 
 		style.height = '';
 
-		const height = this._containerHeight ?? container.offsetHeight,
+		var height = container.offsetHeight,
 		    maxHeight = this.options.maxHeight,
 		    scrolledClass = 'leaflet-popup-scrolled';
 
 		if (maxHeight && height > maxHeight) {
-			style.height = `${maxHeight}px`;
-			container.classList.add(scrolledClass);
+			style.height = maxHeight + 'px';
+			DomUtil.addClass(container, scrolledClass);
 		} else {
-			container.classList.remove(scrolledClass);
+			DomUtil.removeClass(container, scrolledClass);
 		}
 
 		this._containerWidth = this._container.offsetWidth;
-		this._containerHeight = this._container.offsetHeight;
 	},
 
-	_animateZoom(e) {
-		const pos = this._map._latLngToNewLayerPoint(this._latlng, e.zoom, e.center),
+	_animateZoom: function (e) {
+		var pos = this._map._latLngToNewLayerPoint(this._latlng, e.zoom, e.center),
 		    anchor = this._getAnchor();
 		DomUtil.setPosition(this._container, pos.add(anchor));
 	},
 
-	_adjustPan() {
+	_adjustPan: function () {
 		if (!this.options.autoPan) { return; }
 		if (this._map._panAnim) { this._map._panAnim.stop(); }
 
@@ -287,20 +266,20 @@ export const Popup = DivOverlay.extend({
 			return;
 		}
 
-		const map = this._map,
-		    marginBottom = parseInt(getComputedStyle(this._container).marginBottom, 10) || 0,
-		    containerHeight = this._containerHeight + marginBottom,
+		var map = this._map,
+		    marginBottom = parseInt(DomUtil.getStyle(this._container, 'marginBottom'), 10) || 0,
+		    containerHeight = this._container.offsetHeight + marginBottom,
 		    containerWidth = this._containerWidth,
 		    layerPos = new Point(this._containerLeft, -containerHeight - this._containerBottom);
 
 		layerPos._add(DomUtil.getPosition(this._container));
 
-		const containerPos = map.layerPointToContainerPoint(layerPos),
-		      padding = toPoint(this.options.autoPanPadding),
-		      paddingTL = toPoint(this.options.autoPanPaddingTopLeft || padding),
-		      paddingBR = toPoint(this.options.autoPanPaddingBottomRight || padding),
-		      size = map.getSize();
-		let dx = 0,
+		var containerPos = map.layerPointToContainerPoint(layerPos),
+		    padding = toPoint(this.options.autoPanPadding),
+		    paddingTL = toPoint(this.options.autoPanPaddingTopLeft || padding),
+		    paddingBR = toPoint(this.options.autoPanPaddingBottomRight || padding),
+		    size = map.getSize(),
+		    dx = 0,
 		    dy = 0;
 
 		if (containerPos.x + containerWidth + paddingBR.x > size.x) { // right
@@ -332,7 +311,7 @@ export const Popup = DivOverlay.extend({
 		}
 	},
 
-	_getAnchor() {
+	_getAnchor: function () {
 		// Where should we anchor the popup on the source layer?
 		return toPoint(this._source && this._source._getPopupAnchor ? this._source._getPopupAnchor() : [0, 0]);
 	}
@@ -345,7 +324,7 @@ export const Popup = DivOverlay.extend({
 // @alternative
 // @factory L.popup(latlng: LatLng, options?: Popup options)
 // Instantiates a `Popup` object given `latlng` where the popup will open and an optional `options` object that describes its appearance and location.
-export const popup = function (options, source) {
+export var popup = function (options, source) {
 	return new Popup(options, source);
 };
 
@@ -368,7 +347,7 @@ Map.include({
 	// @alternative
 	// @method openPopup(content: String|HTMLElement, latlng: LatLng, options?: Popup options): this
 	// Creates a popup with the specified content and options and opens it in the given point on a map.
-	openPopup(popup, latlng, options) {
+	openPopup: function (popup, latlng, options) {
 		this._initOverlay(Popup, popup, latlng, options)
 		  .openOn(this);
 
@@ -377,7 +356,7 @@ Map.include({
 
 	// @method closePopup(popup?: Popup): this
 	// Closes the popup previously opened with [openPopup](#map-openpopup) (or the given one).
-	closePopup(popup) {
+	closePopup: function (popup) {
 		popup = arguments.length ? popup : this._popup;
 		if (popup) {
 			popup.close();
@@ -408,7 +387,7 @@ Layer.include({
 	// Binds a popup to the layer with the passed `content` and sets up the
 	// necessary event listeners. If a `Function` is passed it will receive
 	// the layer as the first argument and should return a `String` or `HTMLElement`.
-	bindPopup(content, options) {
+	bindPopup: function (content, options) {
 		this._popup = this._initOverlay(Popup, this._popup, content, options);
 		if (!this._popupHandlersAdded) {
 			this.on({
@@ -425,7 +404,7 @@ Layer.include({
 
 	// @method unbindPopup(): this
 	// Removes the popup previously bound with `bindPopup`.
-	unbindPopup() {
+	unbindPopup: function () {
 		if (this._popup) {
 			this.off({
 				click: this._openPopup,
@@ -441,7 +420,7 @@ Layer.include({
 
 	// @method openPopup(latlng?: LatLng): this
 	// Opens the bound popup at the specified `latlng` or at the default popup anchor if no `latlng` is passed.
-	openPopup(latlng) {
+	openPopup: function (latlng) {
 		if (this._popup) {
 			if (!(this instanceof FeatureGroup)) {
 				this._popup._source = this;
@@ -456,7 +435,7 @@ Layer.include({
 
 	// @method closePopup(): this
 	// Closes the popup bound to this layer if it is open.
-	closePopup() {
+	closePopup: function () {
 		if (this._popup) {
 			this._popup.close();
 		}
@@ -465,7 +444,7 @@ Layer.include({
 
 	// @method togglePopup(): this
 	// Opens or closes the popup bound to this layer depending on its current state.
-	togglePopup() {
+	togglePopup: function () {
 		if (this._popup) {
 			this._popup.toggle(this);
 		}
@@ -474,13 +453,13 @@ Layer.include({
 
 	// @method isPopupOpen(): boolean
 	// Returns `true` if the popup bound to this layer is currently open.
-	isPopupOpen() {
+	isPopupOpen: function () {
 		return (this._popup ? this._popup.isOpen() : false);
 	},
 
 	// @method setPopupContent(content: String|HTMLElement|Popup): this
 	// Sets the content of the popup bound to this layer.
-	setPopupContent(content) {
+	setPopupContent: function (content) {
 		if (this._popup) {
 			this._popup.setContent(content);
 		}
@@ -489,18 +468,18 @@ Layer.include({
 
 	// @method getPopup(): Popup
 	// Returns the popup bound to this layer.
-	getPopup() {
+	getPopup: function () {
 		return this._popup;
 	},
 
-	_openPopup(e) {
+	_openPopup: function (e) {
 		if (!this._popup || !this._map) {
 			return;
 		}
 		// prevent map click
 		DomEvent.stop(e);
 
-		const target = e.layer || e.target;
+		var target = e.layer || e.target;
 		if (this._popup._source === target && !(target instanceof Path)) {
 			// treat it like a marker and figure out
 			// if we should toggle it open/closed
@@ -515,12 +494,12 @@ Layer.include({
 		this.openPopup(e.latlng);
 	},
 
-	_movePopup(e) {
+	_movePopup: function (e) {
 		this._popup.setLatLng(e.latlng);
 	},
 
-	_onKeyPress(e) {
-		if (e.originalEvent.code === 'Enter') {
+	_onKeyPress: function (e) {
+		if (e.originalEvent.keyCode === 13) {
 			this._openPopup(e);
 		}
 	}

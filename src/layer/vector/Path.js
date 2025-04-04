@@ -1,5 +1,5 @@
-import {Layer} from '../Layer.js';
-import * as Util from '../../core/Util.js';
+import {Layer} from '../Layer';
+import * as Util from '../../core/Util';
 
 /*
  * @class Path
@@ -10,7 +10,7 @@ import * as Util from '../../core/Util.js';
  * overlays (Polygon, Polyline, Circle). Do not use it directly. Extends `Layer`.
  */
 
-export const Path = Layer.extend({
+export var Path = Layer.extend({
 
 	// @section
 	// @aka Path options
@@ -40,7 +40,7 @@ export const Path = Layer.extend({
 		lineJoin: 'round',
 
 		// @option dashArray: String = null
-		// A string that defines the stroke [dash pattern](https://developer.mozilla.org/docs/Web/SVG/Attribute/stroke-dasharray).
+		// A string that defines the stroke [dash pattern](https://developer.mozilla.org/docs/Web/SVG/Attribute/stroke-dasharray). Doesn't work on `Canvas`-powered layers in [some old browsers](https://developer.mozilla.org/docs/Web/API/CanvasRenderingContext2D/setLineDash#Browser_compatibility).
 		dashArray: null,
 
 		// @option dashOffset: String = null
@@ -74,25 +74,25 @@ export const Path = Layer.extend({
 		bubblingMouseEvents: true
 	},
 
-	beforeAdd(map) {
+	beforeAdd: function (map) {
 		// Renderer is set here because we need to call renderer.getEvents
 		// before this.getEvents.
 		this._renderer = map.getRenderer(this);
 	},
 
-	onAdd() {
+	onAdd: function () {
 		this._renderer._initPath(this);
 		this._reset();
 		this._renderer._addPath(this);
 	},
 
-	onRemove() {
+	onRemove: function () {
 		this._renderer._removePath(this);
 	},
 
 	// @method redraw(): this
 	// Redraws the layer. Sometimes useful after you changed the coordinates that the path uses.
-	redraw() {
+	redraw: function () {
 		if (this._map) {
 			this._renderer._updatePath(this);
 		}
@@ -101,11 +101,11 @@ export const Path = Layer.extend({
 
 	// @method setStyle(style: Path options): this
 	// Changes the appearance of a Path based on the options in the `Path options` object.
-	setStyle(style) {
+	setStyle: function (style) {
 		Util.setOptions(this, style);
 		if (this._renderer) {
 			this._renderer._updateStyle(this);
-			if (this.options.stroke && style && Object.hasOwn(style, 'weight')) {
+			if (this.options.stroke && style && Object.prototype.hasOwnProperty.call(style, 'weight')) {
 				this._updateBounds();
 			}
 		}
@@ -114,7 +114,7 @@ export const Path = Layer.extend({
 
 	// @method bringToFront(): this
 	// Brings the layer to the top of all path layers.
-	bringToFront() {
+	bringToFront: function () {
 		if (this._renderer) {
 			this._renderer._bringToFront(this);
 		}
@@ -123,24 +123,24 @@ export const Path = Layer.extend({
 
 	// @method bringToBack(): this
 	// Brings the layer to the bottom of all path layers.
-	bringToBack() {
+	bringToBack: function () {
 		if (this._renderer) {
 			this._renderer._bringToBack(this);
 		}
 		return this;
 	},
 
-	getElement() {
+	getElement: function () {
 		return this._path;
 	},
 
-	_reset() {
+	_reset: function () {
 		// defined in child classes
 		this._project();
 		this._update();
 	},
 
-	_clickTolerance() {
+	_clickTolerance: function () {
 		// used when doing hit detection for Canvas layers
 		return (this.options.stroke ? this.options.weight / 2 : 0) +
 		  (this._renderer.options.tolerance || 0);

@@ -36,15 +36,15 @@ css: "#map {
 <script type="text/javascript" src="us-states.js"></script>
 <script type="text/javascript">
 
-	const map = L.map('map').setView([37.8, -96], 4);
+	var map = L.map('map').setView([37.8, -96], 4);
 
-	const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+	var tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 		maxZoom: 19,
 		attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 	}).addTo(map);
 
 	// control that shows state info on hover
-	const info = L.control();
+	var info = L.control();
 
 	info.onAdd = function (map) {
 		this._div = L.DomUtil.create('div', 'info');
@@ -53,8 +53,8 @@ css: "#map {
 	};
 
 	info.update = function (props) {
-		const contents = props ? `<b>${props.name}</b><br />${props.density} people / mi<sup>2</sup>` : 'Hover over a state';
-		this._div.innerHTML = `<h4>US Population Density</h4>${contents}`;
+		this._div.innerHTML = '<h4>US Population Density</h4>' +  (props ?
+			'<b>' + props.name + '</b><br />' + props.density + ' people / mi<sup>2</sup>' : 'Hover over a state');
 	};
 
 	info.addTo(map);
@@ -83,7 +83,7 @@ css: "#map {
 	}
 
 	function highlightFeature(e) {
-		const layer = e.target;
+		var layer = e.target;
 
 		layer.setStyle({
 			weight: 5,
@@ -92,16 +92,14 @@ css: "#map {
 			fillOpacity: 0.7
 		});
 
-		layer.bringToFront();
+		if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+			layer.bringToFront();
+		}
 
 		info.update(layer.feature.properties);
 	}
 
-	/* global statesData */
-	const geojson = L.geoJson(statesData, {
-		style,
-		onEachFeature
-	}).addTo(map);
+	var geojson;
 
 	function resetHighlight(e) {
 		geojson.resetStyle(e.target);
@@ -120,23 +118,31 @@ css: "#map {
 		});
 	}
 
+	/* global statesData */
+	geojson = L.geoJson(statesData, {
+		style: style,
+		onEachFeature: onEachFeature
+	}).addTo(map);
+
 	map.attributionControl.addAttribution('Population data &copy; <a href="http://census.gov/">US Census Bureau</a>');
 
 
-	const legend = L.control({position: 'bottomright'});
+	var legend = L.control({position: 'bottomright'});
 
 	legend.onAdd = function (map) {
 
-		const div = L.DomUtil.create('div', 'info legend');
-		const grades = [0, 10, 20, 50, 100, 200, 500, 1000];
-		const labels = [];
-		let from, to;
+		var div = L.DomUtil.create('div', 'info legend');
+		var grades = [0, 10, 20, 50, 100, 200, 500, 1000];
+		var labels = [];
+		var from, to;
 
-		for (let i = 0; i < grades.length; i++) {
+		for (var i = 0; i < grades.length; i++) {
 			from = grades[i];
 			to = grades[i + 1];
 
-			labels.push(`<i style="background:${getColor(from + 1)}"></i> ${from}${to ? `&ndash;${to}` : '+'}`);
+			labels.push(
+				'<i style="background:' + getColor(from + 1) + '"></i> ' +
+				from + (to ? '&ndash;' + to : '+'));
 		}
 
 		div.innerHTML = labels.join('<br>');

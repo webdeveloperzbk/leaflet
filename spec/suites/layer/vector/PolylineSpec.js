@@ -1,298 +1,296 @@
-import {expect} from 'chai';
-import {Map, latLng, polyline} from 'leaflet';
-import {createContainer, removeMapContainer} from '../../SpecHelper.js';
+describe('Polyline', function () {
+	var map, container;
 
-describe('Polyline', () => {
-	let map, container;
-
-	beforeEach(() => {
+	beforeEach(function () {
 		container = createContainer();
-		map = new Map(container, {center: [55.8, 37.6], zoom: 6});
+		map = L.map(container, {center: [55.8, 37.6], zoom: 6});
 	});
 
-	afterEach(() => {
+	afterEach(function () {
 		removeMapContainer(map, container);
 	});
 
-	describe('#initialize', () => {
-		it('doesn\'t overwrite the given latlng array', () => {
-			const originalLatLngs = [
+	describe("#initialize", function () {
+		it("doesn't overwrite the given latlng array", function () {
+			var originalLatLngs = [
 				[1, 2],
 				[3, 4]
 			];
-			const sourceLatLngs = originalLatLngs.slice();
+			var sourceLatLngs = originalLatLngs.slice();
 
-			const polyln = polyline(sourceLatLngs);
+			var polyline = L.polyline(sourceLatLngs);
 
 			expect(sourceLatLngs).to.eql(originalLatLngs);
-			expect(polyln._latlngs).to.not.eql(sourceLatLngs);
-			expect(polyln.getLatLngs()).to.eql(polyln._latlngs);
+			expect(polyline._latlngs).to.not.eql(sourceLatLngs);
+			expect(polyline.getLatLngs()).to.eql(polyline._latlngs);
 		});
 
-		it('should accept a multi', () => {
-			const latLngs = [
+		it("should accept a multi", function () {
+			var latLngs = [
 				[[1, 2], [3, 4], [5, 6]],
 				[[11, 12], [13, 14], [15, 16]]
 			];
 
-			const polyln = polyline(latLngs);
+			var polyline = L.polyline(latLngs);
 
-			expect(polyln._latlngs[0]).to.eql([latLng([1, 2]), latLng([3, 4]), latLng([5, 6])]);
-			expect(polyln._latlngs[1]).to.eql([latLng([11, 12]), latLng([13, 14]), latLng([15, 16])]);
-			expect(polyln.getLatLngs()).to.eql(polyln._latlngs);
+			expect(polyline._latlngs[0]).to.eql([L.latLng([1, 2]), L.latLng([3, 4]), L.latLng([5, 6])]);
+			expect(polyline._latlngs[1]).to.eql([L.latLng([11, 12]), L.latLng([13, 14]), L.latLng([15, 16])]);
+			expect(polyline.getLatLngs()).to.eql(polyline._latlngs);
 		});
 
-		it('should accept an empty array', () => {
-			const polyln = polyline([]);
+		it("should accept an empty array", function () {
+			var polyline = L.polyline([]);
 
-			expect(polyln._latlngs).to.eql([]);
-			expect(polyln.getLatLngs()).to.eql(polyln._latlngs);
+			expect(polyline._latlngs).to.eql([]);
+			expect(polyline.getLatLngs()).to.eql(polyline._latlngs);
 		});
 
-		it('can be added to the map when empty', () => {
-			const polyln = polyline([]).addTo(map);
-			expect(map.hasLayer(polyln)).to.be.true;
+		it("can be added to the map when empty", function () {
+			var polyline = L.polyline([]).addTo(map);
+			expect(map.hasLayer(polyline)).to.be(true);
 		});
 
 	});
 
-	describe('#isEmpty', () => {
-		it('should return true for a polyline with no latlngs', () => {
-			const polyln = polyline([]);
-			expect(polyln.isEmpty()).to.be.true;
+	describe("#isEmpty", function () {
+		it('should return true for a polyline with no latlngs', function () {
+			var polyline = L.polyline([]);
+			expect(polyline.isEmpty()).to.be(true);
 		});
 
-		it('should return false for simple polyline', () => {
-			const latLngs = [[1, 2], [3, 4]];
-			const polyln = polyline(latLngs);
-			expect(polyln.isEmpty()).to.be.false;
+		it('should return false for simple polyline', function () {
+			var latLngs = [[1, 2], [3, 4]];
+			var polyline = L.polyline(latLngs);
+			expect(polyline.isEmpty()).to.be(false);
 		});
 
-		it('should return false for multi-polyline', () => {
-			const latLngs = [
+		it('should return false for multi-polyline', function () {
+			var latLngs = [
 				[[1, 2], [3, 4]],
 				[[11, 12], [13, 14]]
 			];
-			const polyln = polyline(latLngs);
-			expect(polyln.isEmpty()).to.be.false;
+			var polyline = L.polyline(latLngs);
+			expect(polyline.isEmpty()).to.be(false);
 		});
 
 	});
 
-	describe('#setLatLngs', () => {
-		it('doesn\'t overwrite the given latlng array', () => {
-			const originalLatLngs = [
+	describe("#setLatLngs", function () {
+		it("doesn't overwrite the given latlng array", function () {
+			var originalLatLngs = [
 				[1, 2],
 				[3, 4]
 			];
-			const sourceLatLngs = originalLatLngs.slice();
+			var sourceLatLngs = originalLatLngs.slice();
 
-			const polyln = polyline(sourceLatLngs);
+			var polyline = L.polyline(sourceLatLngs);
 
-			polyln.setLatLngs(sourceLatLngs);
+			polyline.setLatLngs(sourceLatLngs);
 
 			expect(sourceLatLngs).to.eql(originalLatLngs);
 		});
 
-		it('can be set a multi', () => {
-			const latLngs = [
+		it("can be set a multi", function () {
+			var latLngs = [
 				[[1, 2], [3, 4], [5, 6]],
 				[[11, 12], [13, 14], [15, 16]]
 			];
 
-			const polyln = polyline([]);
-			polyln.setLatLngs(latLngs);
+			var polyline = L.polyline([]);
+			polyline.setLatLngs(latLngs);
 
-			expect(polyln._latlngs[0]).to.eql([latLng([1, 2]), latLng([3, 4]), latLng([5, 6])]);
-			expect(polyln._latlngs[1]).to.eql([latLng([11, 12]), latLng([13, 14]), latLng([15, 16])]);
+			expect(polyline._latlngs[0]).to.eql([L.latLng([1, 2]), L.latLng([3, 4]), L.latLng([5, 6])]);
+			expect(polyline._latlngs[1]).to.eql([L.latLng([11, 12]), L.latLng([13, 14]), L.latLng([15, 16])]);
 		});
 	});
 
-	describe('#getCenter', () => {
-		it('should compute center of a big flat line on equator', () => {
-			const polyln = polyline([[0, 0], [0, 90]]).addTo(map);
-			expect(polyln.getCenter()).to.eql(latLng([0, 45]));
+	describe('#getCenter', function () {
+		it('should compute center of a big flat line on equator', function () {
+			var polyline = L.polyline([[0, 0], [0, 90]]).addTo(map);
+			expect(polyline.getCenter()).to.eql(L.latLng([0, 45]));
 		});
 
-		it('should compute center of a big flat line on equator with maxZoom', () => {
+		it('should compute center of a big flat line on equator with maxZoom', function () {
 			map.setMaxZoom(18);
-			const polyln = polyline([[0, 0], [0, 90]]).addTo(map);
-			expect(polyln.getCenter()).to.be.nearLatLng([0, 45]);
+			var polyline = L.polyline([[0, 0], [0, 90]]).addTo(map);
+			expect(polyline.getCenter()).to.be.nearLatLng([0, 45]);
 		});
 
-		it('should compute center of a big flat line close to the pole', () => {
-			const polyln = polyline([[80, 0], [80, 90]]).addTo(map);
-			expect(polyln.getCenter()).to.be.nearLatLng([80, 45], 1e-2);
+		it('should compute center of a big flat line close to the pole', function () {
+			var polyline = L.polyline([[80, 0], [80, 90]]).addTo(map);
+			expect(polyline.getCenter()).to.be.nearLatLng([80, 45], 1e-2);
 		});
 
-		it('should compute center of a big diagonal line', () => {
-			const polyln = polyline([[0, 0], [80, 80]]).addTo(map);
-			expect(polyln.getCenter()).to.be.nearLatLng([57.04516467328689, 40], 1);
+		it('should compute center of a big diagonal line', function () {
+			var polyline = L.polyline([[0, 0], [80, 80]]).addTo(map);
+			expect(polyline.getCenter()).to.be.nearLatLng([57.04516467328689, 40], 1);
 		});
 
-		it('should compute center of a diagonal line close to the pole', () => {
-			const polyln = polyline([[70, 70], [84, 84]]).addTo(map);
-			expect(polyln.getCenter()).to.be.nearLatLng([79.01810060159328, 77], 1);
+		it('should compute center of a diagonal line close to the pole', function () {
+			var polyline = L.polyline([[70, 70], [84, 84]]).addTo(map);
+			expect(polyline.getCenter()).to.be.nearLatLng([79.01810060159328, 77], 1);
 		});
 
-		it('should compute center of a big multiline', () => {
-			const polyln = polyline([[10, -80], [0, 0], [0, 10], [10, 90]]).addTo(map);
-			expect(polyln.getCenter()).to.be.nearLatLng([0, 5], 1);
+		it('should compute center of a big multiline', function () {
+			var polyline = L.polyline([[10, -80], [0, 0], [0, 10], [10, 90]]).addTo(map);
+			expect(polyline.getCenter()).to.be.nearLatLng([0, 5], 1);
 		});
 
-		it('should compute center of a small flat line', () => {
-			const polyln = polyline([[0, 0], [0, 0.090]]).addTo(map);
+		it('should compute center of a small flat line', function () {
+			var polyline = L.polyline([[0, 0], [0, 0.090]]).addTo(map);
 			map.setZoom(0);  // Make the line disappear in screen;
-			expect(polyln.getCenter()).to.be.nearLatLng([0, 0.045]);
+			expect(polyline.getCenter()).to.be.nearLatLng([0, 0.045]);
 		});
 
-		it('throws error if not yet added to map', () => {
-			expect(() => {
-				const poly = polyline([[0, 0], [0, 0.090]]);
-				poly.getCenter();
-			}).to.throw('Must add layer to map before using getCenter()');
+		it('throws error if not yet added to map', function () {
+			expect(function () {
+				var polyline = L.polyline([[0, 0], [0, 0.090]]);
+				polyline.getCenter();
+			}).to.throwException('Must add layer to map before using getCenter()');
 		});
 
-		it('should compute same center for low and high zoom', () => {
-			const layer = polyline([[10, -80], [0, 0], [0, 10], [10, 90]]).addTo(map);
+		it('should compute same center for low and high zoom', function () {
+			var layer = L.polyline([[10, -80], [0, 0], [0, 10], [10, 90]]).addTo(map);
 			map.setZoom(0);
-			const center = layer.getCenter();
+			var center = layer.getCenter();
 			map.setZoom(18);
 			expect(layer.getCenter()).to.be.nearLatLng(center);
 		});
 
-		it('should compute center of a zick-zack line', () => {
-			const polyln = polyline([[0, 0], [50, 50], [30, 30], [35, 35]]).addTo(map);
-			expect(polyln.getCenter()).to.be.nearLatLng([40.551864181628666, 38.36684065813897]);
+		it('should compute center of a zick-zack line', function () {
+			var polyline = L.polyline([[0, 0], [50, 50], [30, 30], [35, 35]]).addTo(map);
+			expect(polyline.getCenter()).to.be.nearLatLng([40.551864181628666, 38.36684065813897]);
 		});
 
 	});
 
-	describe('#_defaultShape', () => {
-		it('should return latlngs when flat', () => {
-			const latLngs = [latLng([1, 2]), latLng([3, 4])];
+	describe("#_defaultShape", function () {
+		it("should return latlngs when flat", function () {
+			var latLngs = [L.latLng([1, 2]), L.latLng([3, 4])];
 
-			const polyln = polyline(latLngs);
+			var polyline = L.polyline(latLngs);
 
-			expect(polyln._defaultShape()).to.eql(latLngs);
+			expect(polyline._defaultShape()).to.eql(latLngs);
 		});
 
-		it('should return first latlngs on a multi', () => {
-			const latLngs = [
-				[latLng([1, 2]), latLng([3, 4])],
-				[latLng([11, 12]), latLng([13, 14])]
+		it("should return first latlngs on a multi", function () {
+			var latLngs = [
+				[L.latLng([1, 2]), L.latLng([3, 4])],
+				[L.latLng([11, 12]), L.latLng([13, 14])]
 			];
 
-			const polyln = polyline(latLngs);
+			var polyline = L.polyline(latLngs);
 
-			expect(polyln._defaultShape()).to.eql(latLngs[0]);
+			expect(polyline._defaultShape()).to.eql(latLngs[0]);
 		});
 
 	});
 
-	describe('#addLatLng', () => {
-		it('should add latlng to latlngs', () => {
-			const latLngs = [
+	describe("#addLatLng", function () {
+		it("should add latlng to latlngs", function () {
+			var latLngs = [
 				[1, 2],
 				[3, 4]
 			];
 
-			const polyln = polyline(latLngs);
+			var polyline = L.polyline(latLngs);
 
-			polyln.addLatLng([5, 6]);
+			polyline.addLatLng([5, 6]);
 
-			expect(polyln._latlngs).to.eql([latLng([1, 2]), latLng([3, 4]), latLng([5, 6])]);
+			expect(polyline._latlngs).to.eql([L.latLng([1, 2]), L.latLng([3, 4]), L.latLng([5, 6])]);
 		});
 
-		it('should add latlng to first latlngs on a multi', () => {
-			const latLngs = [
+		it("should add latlng to first latlngs on a multi", function () {
+			var latLngs = [
 				[[1, 2], [3, 4]],
 				[[11, 12], [13, 14]]
 			];
 
-			const polyln = polyline(latLngs);
+			var polyline = L.polyline(latLngs);
 
-			polyln.addLatLng([5, 6]);
+			polyline.addLatLng([5, 6]);
 
-			expect(polyln._latlngs[0]).to.eql([latLng([1, 2]), latLng([3, 4]), latLng([5, 6])]);
-			expect(polyln._latlngs[1]).to.eql([latLng([11, 12]), latLng([13, 14])]);
+			expect(polyline._latlngs[0]).to.eql([L.latLng([1, 2]), L.latLng([3, 4]), L.latLng([5, 6])]);
+			expect(polyline._latlngs[1]).to.eql([L.latLng([11, 12]), L.latLng([13, 14])]);
 		});
 
-		it('should add latlng to latlngs by reference', () => {
-			const latLngs = [
+		it("should add latlng to latlngs by reference", function () {
+			var latLngs = [
 				[[11, 12], [13, 14]],
 				[[1, 2], [3, 4]]
 			];
 
-			const polyln = polyline(latLngs);
+			var polyline = L.polyline(latLngs);
 
-			polyln.addLatLng([5, 6], polyln._latlngs[1]);
+			polyline.addLatLng([5, 6], polyline._latlngs[1]);
 
-			expect(polyln._latlngs[1]).to.eql([latLng([1, 2]), latLng([3, 4]), latLng([5, 6])]);
-			expect(polyln._latlngs[0]).to.eql([latLng([11, 12]), latLng([13, 14])]);
+			expect(polyline._latlngs[1]).to.eql([L.latLng([1, 2]), L.latLng([3, 4]), L.latLng([5, 6])]);
+			expect(polyline._latlngs[0]).to.eql([L.latLng([11, 12]), L.latLng([13, 14])]);
 		});
 
-		it('should add latlng on empty polyline', () => {
-			const polyln = polyline([]);
+		it("should add latlng on empty polyline", function () {
+			var polyline = L.polyline([]);
 
-			polyln.addLatLng([1, 2]);
+			polyline.addLatLng([1, 2]);
 
-			expect(polyln._latlngs).to.eql([latLng([1, 2])]);
+			expect(polyline._latlngs).to.eql([L.latLng([1, 2])]);
 		});
 	});
 
-	describe('#setStyle', () => {
-		it('succeeds for empty Polyline already added to the map', () => {
-			const style = {
+	describe("#setStyle", function () {
+		it("succeeds for empty Polyline already added to the map", function () {
+			var style = {
 				weight: 3
 			};
-			const polyln = polyline([]);
+			var polyline = L.polyline([]);
 
-			polyln.addTo(map);
-			polyln.setStyle(style);
+			polyline.addTo(map);
+			polyline.setStyle(style);
 
-			for (const [prop, expectedValue] of Object.entries(style)) {
-				expect(polyln.options[prop]).to.equal(expectedValue);
+			for (var prop in style) {
+				expect(polyline.options[prop]).to.be(style[prop]);
 			}
 		});
 	});
 
-	describe('#setStyle', () => {
-		it('succeeds for empty Polyline already added to the map', () => {
-			const style = {
+	describe("#setStyle", function () {
+		it("succeeds for empty Polyline already added to the map", function () {
+			var style = {
 				weight: 3
 			};
-			const polyln = polyline([]);
+			var polyline = L.polyline([]);
 
-			polyln.addTo(map);
-			polyln.setStyle(style);
+			polyline.addTo(map);
+			polyline.setStyle(style);
 
-			for (const [prop, expectedValue] of Object.entries(style)) {
-				expect(polyln.options[prop]).to.equal(expectedValue);
+			for (var prop in style) {
+				expect(polyline.options[prop]).to.be(style[prop]);
 			}
 		});
 	});
 
-	describe('#distance', () => {
-		it('calculates closestLayerPoint', () => {
-			const p1 = map.latLngToLayerPoint([55.8, 37.6]);
-			const p2 = map.latLngToLayerPoint([57.123076977278, 44.861962891635]);
-			const latlngs = [[56.485503424111, 35.545556640339], [55.972522915346, 36.116845702918], [55.502459116923, 34.930322265253], [55.31534617509, 38.973291015816]]
-				.map(ll => latLng(ll[0], ll[1]));
-			const polyln = polyline([], {
+	describe("#distance", function () {
+		it("calculates closestLayerPoint", function () {
+			var p1 = map.latLngToLayerPoint([55.8, 37.6]);
+			var p2 = map.latLngToLayerPoint([57.123076977278, 44.861962891635]);
+			var latlngs = [[56.485503424111, 35.545556640339], [55.972522915346, 36.116845702918], [55.502459116923, 34.930322265253], [55.31534617509, 38.973291015816]]
+				.map(function (ll) {
+					return L.latLng(ll[0], ll[1]);
+				});
+			var polyline = L.polyline([], {
 				'noClip': true
 			});
-			map.addLayer(polyln);
+			map.addLayer(polyline);
 
-			expect(polyln.closestLayerPoint(p1)).to.equal(null);
+			expect(polyline.closestLayerPoint(p1)).to.be(null);
 
-			polyln.setLatLngs(latlngs);
-			const point = polyln.closestLayerPoint(p1);
-			expect(point).not.to.equal(null);
-			expect(point.distance).to.not.equal(Infinity);
-			expect(point.distance).to.not.equal(NaN);
+			polyline.setLatLngs(latlngs);
+			var point = polyline.closestLayerPoint(p1);
+			expect(point).not.to.be(null);
+			expect(point.distance).to.not.be(Infinity);
+			expect(point.distance).to.not.be(NaN);
 
-			const point2 = polyln.closestLayerPoint(p2);
+			var point2 = polyline.closestLayerPoint(p2);
 
 			expect(point.distance).to.be.lessThan(point2.distance);
 		});

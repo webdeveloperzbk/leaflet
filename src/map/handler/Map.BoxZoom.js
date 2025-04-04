@@ -1,9 +1,10 @@
-import {Map} from '../Map.js';
-import {Handler} from '../../core/Handler.js';
-import * as DomUtil from '../../dom/DomUtil.js';
-import * as DomEvent from '../../dom/DomEvent.js';
-import {LatLngBounds} from '../../geo/LatLngBounds.js';
-import {Bounds} from '../../geometry/Bounds.js';
+import {Map} from '../Map';
+import {Handler} from '../../core/Handler';
+import * as Util from '../../core/Util';
+import * as DomUtil from '../../dom/DomUtil';
+import * as DomEvent from '../../dom/DomEvent';
+import {LatLngBounds} from '../../geo/LatLngBounds';
+import {Bounds} from '../../geometry/Bounds';
 
 /*
  * L.Handler.BoxZoom is used to add shift-drag zoom interaction to the map
@@ -15,12 +16,12 @@ import {Bounds} from '../../geometry/Bounds.js';
 Map.mergeOptions({
 	// @option boxZoom: Boolean = true
 	// Whether the map can be zoomed to a rectangular area specified by
-	// dragging the pointer while pressing the shift key.
+	// dragging the mouse while pressing the shift key.
 	boxZoom: true
 });
 
-export const BoxZoom = Handler.extend({
-	initialize(map) {
+export var BoxZoom = Handler.extend({
+	initialize: function (map) {
 		this._map = map;
 		this._container = map._container;
 		this._pane = map._panes.overlayPane;
@@ -28,37 +29,37 @@ export const BoxZoom = Handler.extend({
 		map.on('unload', this._destroy, this);
 	},
 
-	addHooks() {
-		DomEvent.on(this._container, 'pointerdown', this._onPointerDown, this);
+	addHooks: function () {
+		DomEvent.on(this._container, 'mousedown', this._onMouseDown, this);
 	},
 
-	removeHooks() {
-		DomEvent.off(this._container, 'pointerdown', this._onPointerDown, this);
+	removeHooks: function () {
+		DomEvent.off(this._container, 'mousedown', this._onMouseDown, this);
 	},
 
-	moved() {
+	moved: function () {
 		return this._moved;
 	},
 
-	_destroy() {
-		this._pane.remove();
+	_destroy: function () {
+		DomUtil.remove(this._pane);
 		delete this._pane;
 	},
 
-	_resetState() {
+	_resetState: function () {
 		this._resetStateTimeout = 0;
 		this._moved = false;
 	},
 
-	_clearDeferredResetState() {
+	_clearDeferredResetState: function () {
 		if (this._resetStateTimeout !== 0) {
 			clearTimeout(this._resetStateTimeout);
 			this._resetStateTimeout = 0;
 		}
 	},
 
-	_onPointerDown(e) {
-		if (!e.shiftKey || (e.button !== 0)) { return false; }
+	_onMouseDown: function (e) {
+		if (!e.shiftKey || ((e.which !== 1) && (e.button !== 1))) { return false; }
 
 		// Clear the deferred resetState if it hasn't executed yet, otherwise it
 		// will interrupt the interaction and orphan a box element in the container.
@@ -72,37 +73,37 @@ export const BoxZoom = Handler.extend({
 
 		DomEvent.on(document, {
 			contextmenu: DomEvent.stop,
-			pointermove: this._onPointerMove,
-			pointerup: this._onPointerUp,
+			mousemove: this._onMouseMove,
+			mouseup: this._onMouseUp,
 			keydown: this._onKeyDown
 		}, this);
 	},
 
-	_onPointerMove(e) {
+	_onMouseMove: function (e) {
 		if (!this._moved) {
 			this._moved = true;
 
 			this._box = DomUtil.create('div', 'leaflet-zoom-box', this._container);
-			this._container.classList.add('leaflet-crosshair');
+			DomUtil.addClass(this._container, 'leaflet-crosshair');
 
 			this._map.fire('boxzoomstart');
 		}
 
 		this._point = this._map.mouseEventToContainerPoint(e);
 
-		const bounds = new Bounds(this._point, this._startPoint),
+		var bounds = new Bounds(this._point, this._startPoint),
 		    size = bounds.getSize();
 
 		DomUtil.setPosition(this._box, bounds.min);
 
-		this._box.style.width  = `${size.x}px`;
-		this._box.style.height = `${size.y}px`;
+		this._box.style.width  = size.x + 'px';
+		this._box.style.height = size.y + 'px';
 	},
 
-	_finish() {
+	_finish: function () {
 		if (this._moved) {
-			this._box.remove();
-			this._container.classList.remove('leaflet-crosshair');
+			DomUtil.remove(this._box);
+			DomUtil.removeClass(this._container, 'leaflet-crosshair');
 		}
 
 		DomUtil.enableTextSelection();
@@ -110,14 +111,14 @@ export const BoxZoom = Handler.extend({
 
 		DomEvent.off(document, {
 			contextmenu: DomEvent.stop,
-			pointermove: this._onPointerMove,
-			pointerup: this._onPointerUp,
+			mousemove: this._onMouseMove,
+			mouseup: this._onMouseUp,
 			keydown: this._onKeyDown
 		}, this);
 	},
 
-	_onPointerUp(e) {
-		if (e.button !== 0) { return; }
+	_onMouseUp: function (e) {
+		if ((e.which !== 1) && (e.button !== 1)) { return; }
 
 		this._finish();
 
@@ -125,9 +126,9 @@ export const BoxZoom = Handler.extend({
 		// Postpone to next JS tick so internal click event handling
 		// still see it as "moved".
 		this._clearDeferredResetState();
-		this._resetStateTimeout = setTimeout(this._resetState.bind(this), 0);
+		this._resetStateTimeout = setTimeout(Util.bind(this._resetState, this), 0);
 
-		const bounds = new LatLngBounds(
+		var bounds = new LatLngBounds(
 		        this._map.containerPointToLatLng(this._startPoint),
 		        this._map.containerPointToLatLng(this._point));
 
@@ -136,8 +137,8 @@ export const BoxZoom = Handler.extend({
 			.fire('boxzoomend', {boxZoomBounds: bounds});
 	},
 
-	_onKeyDown(e) {
-		if (e.code === 'Escape') {
+	_onKeyDown: function (e) {
+		if (e.keyCode === 27) {
 			this._finish();
 			this._clearDeferredResetState();
 			this._resetState();
@@ -147,5 +148,5 @@ export const BoxZoom = Handler.extend({
 
 // @section Handlers
 // @property boxZoom: Handler
-// Box (shift-drag with pointer) zoom handler.
+// Box (shift-drag with mouse) zoom handler.
 Map.addInitHook('addHandler', 'boxZoom', BoxZoom);

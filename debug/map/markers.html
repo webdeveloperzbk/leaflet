@@ -1,52 +1,62 @@
-<!doctype html>
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<title>Leaflet debug page - Markers</title>
-		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=0" />
-		<link rel="stylesheet" href="../../dist/leaflet.css" />
-		<link rel="stylesheet" href="../css/screen.css" />
-		<script type="importmap">
-			{
-				"imports": {
-					"leaflet": "../../dist/leaflet-src.js"
-				}
-			}
-		</script>
-	</head>
-	<body>
-		<div id="map"></div>
-		<script type="module">
-			import {Map, Marker, Polygon, TileLayer} from 'leaflet';
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Leaflet debug page</title>
 
-			const map = new Map('map', {center: [0, 0], zoom: 3, maxZoom: 4});
+    <link rel="stylesheet" href="../../dist/leaflet.css" />
 
-			const markerStatic = new Marker([0, -10], {
-				draggable: false,
-				title: 'Static'
-			});
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-			map.addLayer(markerStatic);
-			markerStatic.bindPopup('Static');
+    <link rel="stylesheet" href="../css/screen.css" />
 
-			const markerDraggable = new Marker([0, 10], {
-				title: 'Draggable'
-			});
+    <script src="../../dist/leaflet-src.js"></script>
+</head>
+<body>
 
-			map.addLayer(markerDraggable);
-			markerDraggable.bindPopup('Draggable');
-			markerDraggable.dragging.enable();
+    <div id="map"></div>
 
-			const poly = new Polygon([[0, 10], [0, 15.5], [0, 50], [20, 20.5]]);
-			map.addLayer(poly);
-			poly.bindPopup('Polygon');
+    <script>
+        map = L.map('map', { center: [0, 0], zoom: 3, maxZoom: 4 });
 
-			markerDraggable.on('click', () => console.log('markerDraggable click'));
-			markerStatic.on('click', () => console.log('markerStatic click'));
-			map.on('click', () => console.log('map click'));
-			poly.on('click', () => console.log('poly click'));
+        var markerStatic = new L.Marker([0, -10], {
+            draggable: false,
+            title: 'Static'
+        });
 
-			new TileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-		</script>
-	</body>
+        map.addLayer(markerStatic);
+        markerStatic.bindPopup("Static");
+
+
+        var markerDraggable = new L.Marker([0, 10], {
+            title: 'Draggable'
+        });
+
+        map.addLayer(markerDraggable);
+        markerDraggable.bindPopup("Draggable");
+        markerDraggable.dragging.enable();
+
+        var poly = new L.Polygon([[0, 10], [0, 15.5], [0, 50], [20, 20.5]]);
+        map.addLayer(poly);
+        poly.bindPopup("Polygon");
+
+
+        markerDraggable.on('click', function(e) {
+            console.log('markerDraggable click');
+        });
+        markerStatic.on('click', function(e) {
+            console.log('markerStatic click');
+        })
+        map.on('click', function(e) {
+            console.log('map click');
+        });
+
+        poly.on('click', function(e) {
+            console.log('poly click');
+        });
+
+        var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    			attribution: '&copy; <a href="https://skpdi.mosreg.ru">СКПДИ2 ЦРЦТ</a>',
+    		}).addTo(map);
+    </script>
+</body>
 </html>

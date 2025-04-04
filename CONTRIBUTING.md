@@ -97,7 +97,7 @@ Also, please make sure that you have [line endings configured properly](https://
 
 Happy coding!
 
-### Building Leaflet
+### Using RollupJS
 
 The source JavaScript code for Leaflet is a few dozen files, in the `src/` directory.
 But normally, Leaflet is loaded in a web browser as just one JavaScript file.
@@ -110,7 +110,7 @@ development. `dist/leaflet.js` is uglified and thus is smaller, so it's better
 for deployment.
 
 When developing (or bugfixing) core Leaflet functionalities, it's common to use
-the webpages in the `debug/` directory, and run the tests
+the webpages in the `debug/` directory, and run the unit tests (`spec/index.html`)
 in a graphical browser. This requires regenerating the bundled files quickly.
 
 In order to do so, run `npm run watch` or `yarn run watch`. This will keep
@@ -118,24 +118,21 @@ on rebuilding the bundles whenever any source file changes.
 
 ## Running the Tests
 
-Before running the tests, make sure that the source code has been built (as mentioned above). If you want to run the tests in the background while working on Leaflet, it is recommended you run the build in `watch` mode. This way the tests will automatically re-run when changes to the source code are made. 
-
-To run the tests from the command line, ensure you have [Google Chrome](https://www.google.com/chrome/) installed and then run:
+To run the tests from the command line, install [Google Chrome](https://www.google.com/chrome/) then run:
 
 ```
 npm test
 ```
 
-By default the tests will run in Google Chrome headlessly (without a UI), to run the tests in other browsers you can pass in the [`--browsers`](https://karma-runner.github.io/latest/config/configuration-file.html#browsers) flag.
+To run the tests in other browsers at the same time, you can do:
 
 ```
-npm test -- --browsers Firefox
+npm test -- -- --browsers Firefox,Chrome,Safari,IE
 ```
 
-For a list of available browsers see the documentation of the included launcher plugins:
-- [`karma-chrome-launcher`](https://github.com/karma-runner/karma-chrome-launcher#available-browsers)
-- [`karma-firefox-launcher`](https://github.com/karma-runner/karma-firefox-launcher#configuration)
-- [`karma-safarinative-launcher`](https://github.com/muthu90ec/karma-safarinative-launcher#readme)
+(Note: the doubling of "`--`" [special option](https://docs.npmjs.com/cli/run-script#description) is [important](https://github.com/Leaflet/Leaflet/pull/6166#issuecomment-390959903))
+
+To run the tests in a browser manually, open `spec/index.html`.
 
 ## Improving Documentation
 
@@ -148,17 +145,14 @@ browse the [`docs/ directory`](https://github.com/Leaflet/Leaflet/tree/main/docs
 choose a certain file for editing, click the Edit button, make changes and follow instructions from there.
 Once it gets merged, the changes will immediately appear on the website.
 
-To work on the documentation locally ensure you have Ruby installed. You can download it from the [Ruby website](https://www.ruby-lang.org/en/downloads/) or use [`rbenv`](https://github.com/rbenv/rbenv) (recommended).
-
-You'll need to install the same Ruby version as specified in [`.ruby-version`](./docs/.ruby-version). If you are using `rbenv` you can install this by running `rbenv install` from the `docs/` directory.
-
 If you need to make edits in a local repository to see how it looks in the process, do the following:
 
-1. Open a terminal in the `docs/` directory.
-2. Make sure you are on the `main` branch by running `git checkout main`.
-3. Run `bundle install` to install the dependencies.
-4. Run `npm run serve` to serve the documentation.
-5. Open [http://localhost:4000](http://localhost:4000) in your web browser.
+ 1. [Install Ruby](https://www.ruby-lang.org/en/downloads/) if you don't have it yet.
+ 2. Run `gem install jekyll`.
+ 3. Enter the directory where you cloned the Leaflet repository
+ 4. Make sure you are in the `main` branch by running `git checkout main`
+ 5. Run `npm run serve`
+ 6. Open `localhost:4000` in your web browser.
 
 Now any file changes in `docs/` will be applied when you reload pages.
 After committing the changes, just send a pull request.

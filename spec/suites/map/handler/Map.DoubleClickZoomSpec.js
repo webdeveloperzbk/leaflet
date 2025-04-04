@@ -1,61 +1,52 @@
-import {expect} from 'chai';
-import {Map} from 'leaflet';
-import UIEventSimulator from 'ui-event-simulator';
-import {createContainer, removeMapContainer} from '../../SpecHelper.js';
+describe("Map.DoubleClickZoom", function () {
+	var container, map;
 
-describe('Map.DoubleClickZoom', () => {
-	let container, map;
-
-	beforeEach(() => {
+	beforeEach(function () {
 		container = createContainer();
-		map = new Map(container, {
+		map = L.map(container, {
 			center: [0, 0],
-			zoom: 3,
-			zoomAnimation: false
+			zoom: 3
 		});
 	});
 
-	afterEach(() => {
+	afterEach(function () {
 		removeMapContainer(map, container);
 	});
 
-	it('zooms in while dblclick', (done) => {
-		const zoom = map.getZoom();
+	it("zooms in while dblclick", function (done) {
+		var zoom = map.getZoom();
+		happen.dblclick(container);
 
-		map.on('zoomend', () => {
+		map.on('zoomend', function () {
 			expect(map.getCenter()).to.be.nearLatLng([17.308687886770034, -17.578125000000004]);
 			expect(map.getZoom()).to.be.greaterThan(zoom);
 			done();
 		});
-
-		UIEventSimulator.fire('dblclick', container);
 	});
 
-	it('zooms out while dblclick and holding shift', (done) => {
-		const zoom = map.getZoom();
+	it("zooms out while dblclick and holding shift", function (done) {
+		var zoom = map.getZoom();
+		happen.dblclick(container, {shiftKey: true});
 
-		map.on('zoomend', () => {
+		map.on('zoomend', function () {
 			expect(map.getCenter()).to.be.nearLatLng([-33.137551192346145, 35.15625000000001]);
 			expect(map.getZoom()).to.be.lessThan(zoom);
 			done();
 		});
-
-		UIEventSimulator.fire('dblclick', container, {shiftKey: true});
 	});
 
-	it('doubleClickZoom: \'center\'', (done) => {
-		const doubleClickZoomBefore = map.options.doubleClickZoom;
+	it("doubleClickZoom: 'center'", function (done) {
+		var doubleClickZoomBefore = map.options.doubleClickZoom;
 		map.options.doubleClickZoom = 'center';
-		const zoom = map.getZoom();
+		var zoom = map.getZoom();
+		happen.dblclick(container);
 
-		map.on('zoomend', () => {
+		map.on('zoomend', function () {
 			expect(map.getCenter()).to.be.nearLatLng([0, 0]);
 			expect(map.getZoom()).to.be.greaterThan(zoom);
 			map.options.doubleClickZoom = doubleClickZoomBefore;
 			done();
 		});
-
-		UIEventSimulator.fire('dblclick', container);
 	});
 
 });

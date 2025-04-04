@@ -1,6 +1,6 @@
-import {LatLng} from '../LatLng.js';
-import {Bounds} from '../../geometry/Bounds.js';
-import {Point} from '../../geometry/Point.js';
+import {LatLng} from '../LatLng';
+import {Bounds} from '../../geometry/Bounds';
+import {Point} from '../../geometry/Point';
 
 /*
  * @namespace Projection
@@ -11,15 +11,15 @@ import {Point} from '../../geometry/Point.js';
  * a sphere. Used by the `EPSG:3857` CRS.
  */
 
-const earthRadius = 6378137;
+var earthRadius = 6378137;
 
-export const SphericalMercator = {
+export var SphericalMercator = {
 
 	R: earthRadius,
 	MAX_LATITUDE: 85.0511287798,
 
-	project(latlng) {
-		const d = Math.PI / 180,
+	project: function (latlng) {
+		var d = Math.PI / 180,
 		    max = this.MAX_LATITUDE,
 		    lat = Math.max(Math.min(max, latlng.lat), -max),
 		    sin = Math.sin(lat * d);
@@ -29,8 +29,8 @@ export const SphericalMercator = {
 			this.R * Math.log((1 + sin) / (1 - sin)) / 2);
 	},
 
-	unproject(point) {
-		const d = 180 / Math.PI;
+	unproject: function (point) {
+		var d = 180 / Math.PI;
 
 		return new LatLng(
 			(2 * Math.atan(Math.exp(point.y / this.R)) - (Math.PI / 2)) * d,
@@ -38,7 +38,7 @@ export const SphericalMercator = {
 	},
 
 	bounds: (function () {
-		const d = earthRadius * Math.PI;
+		var d = earthRadius * Math.PI;
 		return new Bounds([-d, -d], [d, d]);
 	})()
 };

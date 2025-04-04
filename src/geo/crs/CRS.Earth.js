@@ -1,5 +1,5 @@
-import {CRS} from './CRS.js';
-import * as Util from '../../core/Util.js';
+import {CRS} from './CRS';
+import * as Util from '../../core/Util';
 
 /*
  * @namespace CRS
@@ -11,7 +11,7 @@ import * as Util from '../../core/Util.js';
  * meters.
  */
 
-export const Earth = Util.extend({}, CRS, {
+export var Earth = Util.extend({}, CRS, {
 	wrapLng: [-180, 180],
 
 	// Mean Earth Radius, as recommended for use by
@@ -20,8 +20,8 @@ export const Earth = Util.extend({}, CRS, {
 	R: 6371000,
 
 	// distance between two geographical points using spherical law of cosines approximation
-	distance(latlng1, latlng2) {
-		const rad = Math.PI / 180,
+	distance: function (latlng1, latlng2) {
+		var rad = Math.PI / 180,
 		    lat1 = latlng1.lat * rad,
 		    lat2 = latlng2.lat * rad,
 		    sinDLat = Math.sin((latlng2.lat - latlng1.lat) * rad / 2),

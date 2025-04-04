@@ -1,43 +1,37 @@
-import {expect} from 'chai';
-import {Control, Map, Marker, TileLayer, Util} from 'leaflet';
-import sinon from 'sinon';
-import UIEventSimulator from 'ui-event-simulator';
-import {createContainer, pointerType, removeMapContainer} from '../SpecHelper.js';
+describe("Control.Layers", function () {
+	var container, map;
 
-describe('Control.Layers', () => {
-	let container, map;
-
-	beforeEach(() => {
+	beforeEach(function () {
 		container = container = createContainer();
-		map = new Map(container);
+		map = L.map(container);
 
 		map.setView([0, 0], 14);
 	});
 
-	afterEach(() => {
+	afterEach(function () {
 		removeMapContainer(map, container);
 	});
 
-	describe('baselayerchange event', () => {
-		it('is fired on input that changes the base layer', () => {
-			const baseLayers = {'Layer 1': new TileLayer(''), 'Layer 2': new TileLayer('')},
-			    layers = new Control.Layers(baseLayers).addTo(map),
+	describe("baselayerchange event", function () {
+		it("is fired on input that changes the base layer", function () {
+			var baseLayers = {"Layer 1": L.tileLayer(''), "Layer 2": L.tileLayer('')},
+			    layers = L.control.layers(baseLayers).addTo(map),
 			    spy = sinon.spy();
 
 			map.on('baselayerchange', spy);
-			UIEventSimulator.fire('click', layers._baseLayersList.getElementsByTagName('input')[0]);
-			expect(spy.called).to.be.true;
-			expect(spy.args[0][0].name).to.equal('Layer 1');
-			expect(spy.args[0][0].layer).to.equal(baseLayers['Layer 1']);
-			UIEventSimulator.fire('click', layers._baseLayersList.getElementsByTagName('input')[1]);
-			expect(spy.calledTwice).to.be.true;
-			expect(spy.args[1][0].name).to.equal('Layer 2');
-			expect(spy.args[1][0].layer).to.equal(baseLayers['Layer 2']);
+			happen.click(layers._baseLayersList.getElementsByTagName("input")[0]);
+			expect(spy.called).to.be.ok();
+			expect(spy.args[0][0].name).to.be("Layer 1");
+			expect(spy.args[0][0].layer).to.be(baseLayers["Layer 1"]);
+			happen.click(layers._baseLayersList.getElementsByTagName("input")[1]);
+			expect(spy.calledTwice).to.be.ok();
+			expect(spy.args[1][0].name).to.be("Layer 2");
+			expect(spy.args[1][0].layer).to.be(baseLayers["Layer 2"]);
 		});
 
-		it('works after removing and readding the Control.Layers to the map', () => {
-			const baseLayers = {'Layer 1': new TileLayer(''), 'Layer 2': new TileLayer('')},
-			    layers = new Control.Layers(baseLayers).addTo(map),
+		it("works after removing and readding the Control.Layers to the map", function () {
+			var baseLayers = {"Layer 1": L.tileLayer(''), "Layer 2": L.tileLayer('')},
+			    layers = L.control.layers(baseLayers).addTo(map),
 			    spy = sinon.spy();
 
 			map.on('baselayerchange', spy);
@@ -45,269 +39,268 @@ describe('Control.Layers', () => {
 			map.removeControl(layers);
 			map.addControl(layers);
 
-			UIEventSimulator.fire('click', layers._baseLayersList.getElementsByTagName('input')[0]);
-			expect(spy.called).to.be.true;
-			expect(spy.args[0][0].name).to.equal('Layer 1');
-			expect(spy.args[0][0].layer).to.equal(baseLayers['Layer 1']);
-			UIEventSimulator.fire('click', layers._baseLayersList.getElementsByTagName('input')[1]);
-			expect(spy.calledTwice).to.be.true;
-			expect(spy.args[1][0].name).to.equal('Layer 2');
-			expect(spy.args[1][0].layer).to.equal(baseLayers['Layer 2']);
+			happen.click(layers._baseLayersList.getElementsByTagName("input")[0]);
+			expect(spy.called).to.be.ok();
+			expect(spy.args[0][0].name).to.be("Layer 1");
+			expect(spy.args[0][0].layer).to.be(baseLayers["Layer 1"]);
+			happen.click(layers._baseLayersList.getElementsByTagName("input")[1]);
+			expect(spy.calledTwice).to.be.ok();
+			expect(spy.args[1][0].name).to.be("Layer 2");
+			expect(spy.args[1][0].layer).to.be(baseLayers["Layer 2"]);
 		});
 
-		it('is not fired on input that doesn\'t change the base layer', () => {
-			const overlays = {'Marker 1': new Marker([0, 0]), 'Marker 2': new Marker([0, 0])},
-			    layers = new Control.Layers({}, overlays).addTo(map),
+		it("is not fired on input that doesn't change the base layer", function () {
+			var overlays = {"Marker 1": L.marker([0, 0]), "Marker 2": L.marker([0, 0])},
+			    layers = L.control.layers({}, overlays).addTo(map),
 			    spy = sinon.spy();
 
 			map.on('baselayerchange', spy);
-			UIEventSimulator.fire('click', layers._overlaysList.getElementsByTagName('input')[0]);
+			happen.click(layers._overlaysList.getElementsByTagName("input")[0]);
 
-			expect(spy.called).to.be.false;
+			expect(spy.called).to.not.be.ok();
 		});
 	});
 
-	describe('updates', () => {
-		it('when an included layer is added or removed from the map', () => {
-			const baseLayer = new TileLayer(),
-			    overlay = new Marker([0, 0]),
-			    layers = new Control.Layers({'Base': baseLayer}, {'Overlay': overlay}).addTo(map);
+	describe("updates", function () {
+		it("when an included layer is added or removed from the map", function () {
+			var baseLayer = L.tileLayer(),
+			    overlay = L.marker([0, 0]),
+			    layers = L.control.layers({"Base": baseLayer}, {"Overlay": overlay}).addTo(map);
 
-			const spy = sinon.spy(layers, '_update');
+			var spy = sinon.spy(layers, '_update');
 
 			map.addLayer(overlay);
 			map.removeLayer(overlay);
 
-			expect(spy.called).to.be.true;
+			expect(spy.called).to.be.ok();
 			expect(spy.callCount).to.eql(2);
 		});
 
-		it('when an included layer is added or removed from the map, it\'s (un)checked', () => {
-			const baseLayer = new TileLayer(),
-			    overlay = new Marker([0, 0]);
-			new Control.Layers({'Baselayer': baseLayer}, {'Overlay': overlay}).addTo(map);
+		it("when an included layer is added or removed from the map, it's (un)checked", function () {
+			var baseLayer = L.tileLayer(),
+			    overlay = L.marker([0, 0]);
+			L.control.layers({"Baselayer": baseLayer}, {"Overlay": overlay}).addTo(map);
 
 			function isChecked() {
 				return !!(map._container.querySelector('.leaflet-control-layers-overlays input').checked);
 			}
 
-			expect(isChecked()).to.be.false;
+			expect(isChecked()).to.not.be.ok();
 			map.addLayer(overlay);
-			expect(isChecked()).to.be.true;
+			expect(isChecked()).to.be.ok();
 			map.removeLayer(overlay);
-			expect(isChecked()).to.be.false;
+			expect(isChecked()).to.not.be.ok();
 		});
 
-		it('not when a non-included layer is added or removed', () => {
-			const baseLayer = new TileLayer(),
-			    overlay = new Marker([0, 0]),
-			    layers = new Control.Layers({'Base': baseLayer}).addTo(map);
+		it("not when a non-included layer is added or removed", function () {
+			var baseLayer = L.tileLayer(),
+			    overlay = L.marker([0, 0]),
+			    layers = L.control.layers({"Base": baseLayer}).addTo(map);
 
-			const spy = sinon.spy(layers, '_update');
+			var spy = sinon.spy(layers, '_update');
 
 			map.addLayer(overlay);
 			map.removeLayer(overlay);
 
-			expect(spy.called).to.be.false;
+			expect(spy.called).to.not.be.ok();
 		});
 
-		it('updates when an included layer is removed from the control', () => {
-			const baseLayer = new TileLayer(),
-			    overlay = new Marker([0, 0]),
-			    layers = new Control.Layers({'Base': baseLayer}, {'Overlay': overlay}).addTo(map);
+		it("updates when an included layer is removed from the control", function () {
+			var baseLayer = L.tileLayer(),
+			    overlay = L.marker([0, 0]),
+			    layers = L.control.layers({"Base": baseLayer}, {"Overlay": overlay}).addTo(map);
 
 			layers.removeLayer(overlay);
 			expect(map._container.querySelector('.leaflet-control-layers-overlays').children.length)
 				.to.be.equal(0);
 		});
 
-		it('silently returns when trying to remove a non-existing layer from the control', () => {
-			const layers = new Control.Layers({'base': new TileLayer()}).addTo(map);
+		it('silently returns when trying to remove a non-existing layer from the control', function () {
+			var layers = L.control.layers({'base': L.tileLayer()}).addTo(map);
 
-			expect(() => {
-				layers.removeLayer(new Marker([0, 0]));
-			}).to.not.throw();
+			expect(function () {
+				layers.removeLayer(L.marker([0, 0]));
+			}).to.not.throwException();
 
 			expect(layers._layers.length).to.be.equal(1);
 		});
 
-		it('having repeated layers works as expected', () => {
-			const layerA = new TileLayer(''), layerB = new TileLayer(''),
-			    baseLayers = {'Layer 1': layerA, 'Layer 2': layerB, 'Layer 3': layerA},
-			    layers = new Control.Layers(baseLayers).addTo(map);
+		it("having repeated layers works as expected", function () {
+			var layerA = L.tileLayer(''), layerB = L.tileLayer(''),
+			    baseLayers = {"Layer 1": layerA, "Layer 2": layerB, "Layer 3": layerA},
+			    layers = L.control.layers(baseLayers).addTo(map);
 
 			function checkInputs(idx) {
-				const inputs = map._container.querySelectorAll('.leaflet-control-layers-base input');
-				for (let i = 0; i < inputs.length; i++) {
-					expect(inputs[i].checked === (idx === i)).to.be.true;
+				var inputs = map._container.querySelectorAll('.leaflet-control-layers-base input');
+				for (var i = 0; i < inputs.length; i++) {
+					expect(inputs[i].checked === (idx === i)).to.be.ok();
 				}
 			}
 
-			UIEventSimulator.fire('click', layers._baseLayersList.getElementsByTagName('input')[1]);
+			happen.click(layers._baseLayersList.getElementsByTagName("input")[1]);
 			checkInputs(1);
-			expect(map._layers[Util.stamp(layerB)]).to.be.equal(layerB);
-			expect(map._layers[Util.stamp(layerA)]).to.be.equal(undefined);
-			UIEventSimulator.fire('click', layers._baseLayersList.getElementsByTagName('input')[0]);
+			expect(map._layers[L.Util.stamp(layerB)]).to.be.equal(layerB);
+			expect(map._layers[L.Util.stamp(layerA)]).to.be.equal(undefined);
+			happen.click(layers._baseLayersList.getElementsByTagName("input")[0]);
 			checkInputs(0);
-			expect(map._layers[Util.stamp(layerA)]).to.be.equal(layerA);
-			expect(map._layers[Util.stamp(layerB)]).to.be.equal(undefined);
-			UIEventSimulator.fire('click', layers._baseLayersList.getElementsByTagName('input')[2]);
+			expect(map._layers[L.Util.stamp(layerA)]).to.be.equal(layerA);
+			expect(map._layers[L.Util.stamp(layerB)]).to.be.equal(undefined);
+			happen.click(layers._baseLayersList.getElementsByTagName("input")[2]);
 			checkInputs(2);
-			expect(map._layers[Util.stamp(layerA)]).to.be.equal(layerA);
-			expect(map._layers[Util.stamp(layerB)]).to.be.equal(undefined);
+			expect(map._layers[L.Util.stamp(layerA)]).to.be.equal(layerA);
+			expect(map._layers[L.Util.stamp(layerB)]).to.be.equal(undefined);
 		});
 	});
 
-	describe('is removed cleanly', () => {
-		it('and layers in the control can still be removed', () => {
-			const baseLayer = new TileLayer('').addTo(map);
-			const layersCtrl = new Control.Layers({'Base': baseLayer}).addTo(map);
+	describe("is removed cleanly", function () {
+		it("and layers in the control can still be removed", function () {
+			var baseLayer = L.tileLayer('').addTo(map);
+			var layersCtrl = L.control.layers({'Base': baseLayer}).addTo(map);
 			map.removeControl(layersCtrl);
 
-			expect(() => {
+			expect(function () {
 				map.removeLayer(baseLayer);
-			}).to.not.throw();
+			}).to.not.throwException();
 		});
 
-		it('and layers in the control can still be removed when added after removing control from map', () => {
-			const baseLayer = new TileLayer('').addTo(map);
-			const layersCtrl = new Control.Layers().addTo(map);
+		it("and layers in the control can still be removed when added after removing control from map", function () {
+			var baseLayer = L.tileLayer('').addTo(map);
+			var layersCtrl = L.control.layers().addTo(map);
 			map.removeControl(layersCtrl);
 			layersCtrl.addBaseLayer(baseLayer, 'Base');
 
-			expect(() => {
+			expect(function () {
 				map.removeLayer(baseLayer);
-			}).to.not.throw();
+			}).to.not.throwException();
 		});
 	});
 
-	describe('is created with an expand link', ()  => {
-		it('when collapsed', () => {
-			new Control.Layers(null, null, {collapsed: true}).addTo(map);
-			expect(map._container.querySelector('.leaflet-control-layers-toggle')).to.be.ok;
+	describe("is created with an expand link", function ()  {
+		it("when collapsed", function () {
+			L.control.layers(null, null, {collapsed: true}).addTo(map);
+			expect(map._container.querySelector('.leaflet-control-layers-toggle')).to.be.ok();
 		});
 
-		it('when not collapsed', () => {
-			new Control.Layers(null, null, {collapsed: false}).addTo(map);
-			expect(map._container.querySelector('.leaflet-control-layers-toggle')).to.be.ok;
-		});
-	});
-
-	describe('collapse when collapsed: true', () => {
-		it('expands on "Enter" keydown when toggle is focused', () => {
-			const layersCtrl = new Control.Layers(null, null, {collapsed: true}).addTo(map);
-			const toggle = layersCtrl._container.querySelector('.leaflet-control-layers-toggle');
-			UIEventSimulator.fire('keydown', toggle, {code: 'Enter'});
-			expect(map._container.querySelector('.leaflet-control-layers-expanded')).to.be.ok;
-		});
-
-		it('expands on click', () => {
-			const layersCtrl = new Control.Layers(null, null, {collapsed: true}).addTo(map);
-			const toggle = layersCtrl._container.querySelector('.leaflet-control-layers-toggle');
-			UIEventSimulator.fire('click', toggle);
-			expect(map._container.querySelector('.leaflet-control-layers-expanded')).to.be.ok;
-		});
-
-		it('does not expand on "Enter" keydown when toggle is not focused', () => {
-			new Control.Layers(null, null, {collapsed: true}).addTo(map);
-			UIEventSimulator.fire('keydown', document, {code:'Enter'});
-			expect(map._container.querySelector('.leaflet-control-layers-expanded')).to.be.null;
-		});
-
-		it('expands when mouse is over', () => {
-			const layersCtrl = new Control.Layers(null, null, {collapsed: true}).addTo(map);
-			UIEventSimulator.fire('pointerenter', layersCtrl._container, {pointerType});
-			expect(map._container.querySelector('.leaflet-control-layers-expanded')).to.be.ok;
-		});
-
-		it.skipIfTouch('collapses when mouse is out', () => {
-			const layersCtrl = new Control.Layers(null, null, {collapsed: true}).addTo(map);
-			UIEventSimulator.fire('pointerenter', layersCtrl._container, {pointerType});
-			expect(map._container.querySelector('.leaflet-control-layers-expanded')).not.to.be.null;
-			UIEventSimulator.fire('pointerleave', layersCtrl._container, {pointerType});
-			expect(map._container.querySelector('.leaflet-control-layers-expanded')).to.be.null;
-		});
-
-		it('collapses when map is clicked', () => {
-			const layersCtrl = new Control.Layers(null, null, {collapsed: true}).addTo(map);
-			UIEventSimulator.fire('pointerenter', layersCtrl._container, {pointerType});
-			expect(map._container.querySelector('.leaflet-control-layers-expanded')).not.to.be.null;
-			UIEventSimulator.fire('click', map._container);
-			expect(map._container.querySelector('.leaflet-control-layers-expanded')).to.be.null;
+		it("when not collapsed", function () {
+			L.control.layers(null, null, {collapsed: false}).addTo(map);
+			expect(map._container.querySelector('.leaflet-control-layers-toggle')).to.be.ok();
 		});
 	});
 
-	describe('does not collapse when collapsed: false', () => {
-		it('does not collapse when mouse enters or leaves', () => {
-			const layersCtrl = new Control.Layers(null, null, {collapsed: false}).addTo(map);
-			expect(map._container.querySelector('.leaflet-control-layers-expanded')).not.to.be.null;
-			UIEventSimulator.fire('pointerenter', layersCtrl._container, {pointerType});
-			expect(map._container.querySelector('.leaflet-control-layers-expanded')).not.to.be.null;
-			UIEventSimulator.fire('pointerleave', layersCtrl._container, {pointerType});
-			expect(map._container.querySelector('.leaflet-control-layers-expanded')).not.to.be.null;
+	describe("collapse when collapsed: true", function () {
+		it('expands on "Enter" keydown when toggle is focused', function () {
+			var layersCtrl = L.control.layers(null, null, {collapsed: true}).addTo(map);
+			var toggle = layersCtrl._container.querySelector('.leaflet-control-layers-toggle');
+			happen.once(toggle, {type:'keydown', keyCode:13});
+			expect(map._container.querySelector('.leaflet-control-layers-expanded')).to.be.ok();
 		});
 
-		it('does not collapse when map is clicked', () => {
-			new Control.Layers(null, null, {collapsed: false}).addTo(map);
-			expect(map._container.querySelector('.leaflet-control-layers-expanded')).to.be.ok;
-			UIEventSimulator.fire('click', map._container);
-			expect(map._container.querySelector('.leaflet-control-layers-expanded')).to.be.ok;
+		it('expands on click', function () {
+			var layersCtrl = L.control.layers(null, null, {collapsed: true}).addTo(map);
+			var toggle = layersCtrl._container.querySelector('.leaflet-control-layers-toggle');
+			happen.once(toggle, {type:'click'});
+			expect(map._container.querySelector('.leaflet-control-layers-expanded')).to.be.ok();
 		});
 
-		it('is scrollable if necessary when added on map', () => {
-			const layersCtrl = new Control.Layers(null, null, {collapsed: false});
-			let i = 0;
+		it('does not expand on "Enter" keydown when toggle is not focused', function () {
+			L.control.layers(null, null, {collapsed: true}).addTo(map);
+			happen.once(document, {type:'keydown', keyCode:13});
+			expect(map._container.querySelector('.leaflet-control-layers-expanded')).to.not.be.ok();
+		});
+
+		it('expands when mouse is over', function () {
+			var layersCtrl = L.control.layers(null, null, {collapsed: true}).addTo(map);
+			happen.once(layersCtrl._container, {type:'mouseover'});
+			expect(map._container.querySelector('.leaflet-control-layers-expanded')).to.be.ok();
+		});
+
+		it('collapses when mouse is out', function () {
+			var layersCtrl = L.control.layers(null, null, {collapsed: true}).addTo(map);
+			happen.once(layersCtrl._container, {type:'mouseover'});
+			happen.once(layersCtrl._container, {type:'mouseout'});
+			expect(map._container.querySelector('.leaflet-control-layers-expanded')).to.not.be.ok();
+		});
+
+		it('collapses when map is clicked', function () {
+			var layersCtrl = L.control.layers(null, null, {collapsed: true}).addTo(map);
+			happen.once(layersCtrl._container, {type:'mouseover'});
+			expect(map._container.querySelector('.leaflet-control-layers-expanded')).to.be.ok();
+			happen.click(map._container);
+			expect(map._container.querySelector('.leaflet-control-layers-expanded')).to.not.be.ok();
+		});
+	});
+
+	describe("does not collapse when collapsed: false", function () {
+		it('does not collapse when mouse enters or leaves', function () {
+			var layersCtrl = L.control.layers(null, null, {collapsed: false}).addTo(map);
+			expect(map._container.querySelector('.leaflet-control-layers-expanded')).to.be.ok();
+			happen.once(layersCtrl._container, {type:'mouseover'});
+			expect(map._container.querySelector('.leaflet-control-layers-expanded')).to.be.ok();
+			happen.once(layersCtrl._container, {type:'mouseout'});
+			expect(map._container.querySelector('.leaflet-control-layers-expanded')).to.be.ok();
+		});
+
+		it('does not collapse when map is clicked', function () {
+			L.control.layers(null, null, {collapsed: false}).addTo(map);
+			expect(map._container.querySelector('.leaflet-control-layers-expanded')).to.be.ok();
+			happen.click(map._container);
+			expect(map._container.querySelector('.leaflet-control-layers-expanded')).to.be.ok();
+		});
+
+		it('is scrollable if necessary when added on map', function () {
+			var layersCtrl = L.control.layers(null, null, {collapsed: false}),
+			    i = 0;
 
 			// Need to create a DIV with specified height and insert it into DOM, so that the browser
 			// gives it an actual size.
 			map.remove();
 			container.style.height = container.style.width = '200px';
-			map = new Map(container);
+			map = L.map(container);
 
 			for (; i < 20; i += 1) {
 				// Default text size: 12px => 12 * 20 = 240px height (not even considering padding/margin).
-				layersCtrl.addOverlay(new Marker([0, 0]), i);
+				layersCtrl.addOverlay(L.marker([0, 0]), i);
 			}
 
 			layersCtrl.addTo(map);
 
 			expect(container.clientHeight).to.be.greaterThan(0); // Make sure first that the map container has a height, otherwise this test is useless.
 			expect(container.clientHeight).to.be.greaterThan(layersCtrl._container.clientHeight);
-			expect(layersCtrl._section.classList.contains('leaflet-control-layers-scrollbar')).to.be.true;
+			expect(layersCtrl._section.classList.contains('leaflet-control-layers-scrollbar')).to.be(true);
 		});
 
-		it('becomes scrollable if necessary when too many layers are added while it is already on map', () => {
-			const layersCtrl = new Control.Layers(null, null, {collapsed: false});
-			let i = 0;
+		it('becomes scrollable if necessary when too many layers are added while it is already on map', function () {
+			var layersCtrl = L.control.layers(null, null, {collapsed: false}),
+			    i = 0;
 
 			// Need to create a DIV with specified height and insert it into DOM, so that the browser
 			// gives it an actual size.
 			map.remove();
 			container.style.height = container.style.width = '200px';
-			map = new Map(container);
+			map = L.map(container);
 
 			layersCtrl.addTo(map);
-			expect(layersCtrl._section.classList.contains('leaflet-control-layers-scrollbar')).to.be.false;
+			expect(layersCtrl._section.classList.contains('leaflet-control-layers-scrollbar')).to.be(false);
 
 			for (; i < 20; i += 1) {
 				// Default text size: 12px => 12 * 20 = 240px height (not even considering padding/margin).
-				layersCtrl.addOverlay(new Marker([0, 0]), i);
+				layersCtrl.addOverlay(L.marker([0, 0]), i);
 			}
 
 			expect(container.clientHeight).to.be.greaterThan(layersCtrl._container.clientHeight);
-			expect(layersCtrl._section.classList.contains('leaflet-control-layers-scrollbar')).to.be.true;
+			expect(layersCtrl._section.classList.contains('leaflet-control-layers-scrollbar')).to.be(true);
 		});
 	});
 
-	describe('sortLayers', () => {
-		it('keeps original order by default', () => {
-			const baseLayerOne = new TileLayer('').addTo(map);
-			const baseLayerTwo = new TileLayer('').addTo(map);
-			const markerC = new Marker([0, 2]).addTo(map);
-			const markerB = new Marker([0, 1]).addTo(map);
-			const markerA = new Marker([0, 0]).addTo(map);
+	describe("sortLayers", function () {
+		it("keeps original order by default", function () {
+			var baseLayerOne = L.tileLayer('').addTo(map);
+			var baseLayerTwo = L.tileLayer('').addTo(map);
+			var markerC = L.marker([0, 2]).addTo(map);
+			var markerB = L.marker([0, 1]).addTo(map);
+			var markerA = L.marker([0, 0]).addTo(map);
 
-			new Control.Layers({
+			L.control.layers({
 				'Base One': baseLayerOne,
 				'Base Two': baseLayerTwo
 			}, {
@@ -316,7 +309,7 @@ describe('Control.Layers', () => {
 				'Marker A': markerA
 			}).addTo(map);
 
-			const elems = map.getContainer().querySelectorAll('div.leaflet-control-layers label span span');
+			var elems = map.getContainer().querySelectorAll('div.leaflet-control-layers label span span');
 			expect(elems[0].innerHTML.trim()).to.be.equal('Base One');
 			expect(elems[1].innerHTML.trim()).to.be.equal('Base Two');
 			expect(elems[2].innerHTML.trim()).to.be.equal('Marker C');
@@ -324,14 +317,14 @@ describe('Control.Layers', () => {
 			expect(elems[4].innerHTML.trim()).to.be.equal('Marker A');
 		});
 
-		it('sorts alphabetically if no function is specified', () => {
-			const baseLayerOne = new TileLayer('').addTo(map);
-			const baseLayerTwo = new TileLayer('').addTo(map);
-			const markerA = new Marker([0, 0]).addTo(map);
-			const markerB = new Marker([0, 1]).addTo(map);
-			const markerC = new Marker([0, 2]).addTo(map);
+		it("sorts alphabetically if no function is specified", function () {
+			var baseLayerOne = L.tileLayer('').addTo(map);
+			var baseLayerTwo = L.tileLayer('').addTo(map);
+			var markerA = L.marker([0, 0]).addTo(map);
+			var markerB = L.marker([0, 1]).addTo(map);
+			var markerC = L.marker([0, 2]).addTo(map);
 
-			new Control.Layers({
+			L.control.layers({
 				'Base Two': baseLayerTwo,
 				'Base One': baseLayerOne
 			}, {
@@ -342,7 +335,7 @@ describe('Control.Layers', () => {
 				sortLayers: true
 			}).addTo(map);
 
-			const elems = map.getContainer().querySelectorAll('div.leaflet-control-layers label span span');
+			var elems = map.getContainer().querySelectorAll('div.leaflet-control-layers label span span');
 			expect(elems[0].innerHTML.trim()).to.be.equal('Base One');
 			expect(elems[1].innerHTML.trim()).to.be.equal('Base Two');
 			expect(elems[2].innerHTML.trim()).to.be.equal('Marker A');
@@ -350,14 +343,14 @@ describe('Control.Layers', () => {
 			expect(elems[4].innerHTML.trim()).to.be.equal('Marker C');
 		});
 
-		it('uses the compare function to sort layers', () => {
-			const baseLayerOne = new TileLayer('', {customOption: 999}).addTo(map);
-			const baseLayerTwo = new TileLayer('', {customOption: 998}).addTo(map);
-			const markerA = new Marker([0, 0], {customOption: 102}).addTo(map);
-			const markerB = new Marker([0, 1], {customOption: 100}).addTo(map);
-			const markerC = new Marker([0, 2], {customOption: 101}).addTo(map);
+		it("uses the compare function to sort layers", function () {
+			var baseLayerOne = L.tileLayer('', {customOption: 999}).addTo(map);
+			var baseLayerTwo = L.tileLayer('', {customOption: 998}).addTo(map);
+			var markerA = L.marker([0, 0], {customOption: 102}).addTo(map);
+			var markerB = L.marker([0, 1], {customOption: 100}).addTo(map);
+			var markerC = L.marker([0, 2], {customOption: 101}).addTo(map);
 
-			new Control.Layers({
+			L.control.layers({
 				'Base One': baseLayerOne,
 				'Base Two': baseLayerTwo
 			}, {
@@ -366,48 +359,15 @@ describe('Control.Layers', () => {
 				'Marker C': markerC
 			}, {
 				sortLayers: true,
-				sortFunction(a, b) { return a.options.customOption - b.options.customOption; }
+				sortFunction: function (a, b) { return a.options.customOption - b.options.customOption; }
 			}).addTo(map);
 
-			const elems = map.getContainer().querySelectorAll('div.leaflet-control-layers label span span');
+			var elems = map.getContainer().querySelectorAll('div.leaflet-control-layers label span span');
 			expect(elems[0].innerHTML.trim()).to.be.equal('Base Two');
 			expect(elems[1].innerHTML.trim()).to.be.equal('Base One');
 			expect(elems[2].innerHTML.trim()).to.be.equal('Marker B');
 			expect(elems[3].innerHTML.trim()).to.be.equal('Marker C');
 			expect(elems[4].innerHTML.trim()).to.be.equal('Marker A');
 		});
-	});
-
-	it('refocus map after interaction', () => {
-		const baseLayers = {'Layer 1': new TileLayer(''), 'Layer 2': new TileLayer('')},
-		control = new Control.Layers(baseLayers).addTo(map);
-
-		const spy = sinon.spy(map.getContainer(), 'focus');
-		map.getContainer().focus();
-		expect(spy.calledOnce).to.be.true;
-
-		// simulate keyboard-click event
-		spy.resetHistory();
-		UIEventSimulator.fire('click', control._baseLayersList.getElementsByTagName('input')[0], {
-			screenX: 0,
-			screenY: 0,
-		});
-		expect(spy.calledOnce).to.be.false;
-
-		// simulate MouseEvent at 0, 1
-		spy.resetHistory();
-		UIEventSimulator.fire('click', control._baseLayersList.getElementsByTagName('input')[0], {
-			screenX: 0,
-			screenY: 1,
-		});
-		expect(spy.calledOnce).to.be.true;
-
-		// simulate MouseEvent
-		spy.resetHistory();
-		UIEventSimulator.fire('click', control._baseLayersList.getElementsByTagName('input')[0], {
-			screenX: 100, // random number - not 0
-			screenY: 100, // random number - not 0
-		});
-		expect(spy.calledOnce).to.be.true;
 	});
 });

@@ -1,7 +1,9 @@
-import {GridLayer} from './GridLayer.js';
-import Browser from '../../core/Browser.js';
-import * as Util from '../../core/Util.js';
-import * as DomEvent from '../../dom/DomEvent.js';
+import {GridLayer} from './GridLayer';
+import Browser from '../../core/Browser';
+import * as Util from '../../core/Util';
+import * as DomEvent from '../../dom/DomEvent';
+import * as DomUtil from '../../dom/DomUtil';
+
 
 /*
  * @class TileLayer
@@ -12,7 +14,7 @@ import * as DomEvent from '../../dom/DomEvent.js';
  * @example
  *
  * ```js
- * L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png?{foo}', {foo: 'bar', attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).addTo(map);
+ * L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png?{foo}', {foo: 'bar', attribution: '&copy; <a href="https://skpdi.mosreg.ru">СКПДИ2 ЦРЦТ</a>'}).addTo(map);
  * ```
  *
  * @section URL template
@@ -34,7 +36,7 @@ import * as DomEvent from '../../dom/DomEvent.js';
  */
 
 
-export const TileLayer = GridLayer.extend({
+export var TileLayer = GridLayer.extend({
 
 	// @section
 	// @aka TileLayer options
@@ -86,22 +88,11 @@ export const TileLayer = GridLayer.extend({
 		referrerPolicy: false
 	},
 
-	initialize(url, options) {
+	initialize: function (url, options) {
 
 		this._url = url;
 
 		options = Util.setOptions(this, options);
-
-		// in case the attribution hasn't been specified, check for known hosts that require attribution
-		if (options.attribution === null && URL.canParse(url)) {
-			const urlHostname = new URL(url).hostname;
-
-			// check for Open Street Map hosts
-			const osmHosts = ['tile.openstreetmap.org', 'tile.osm.org'];
-			if (osmHosts.some(host => urlHostname.endsWith(host))) {
-				options.attribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
-			}
-		}
 
 		// detecting retina displays, adjusting tileSize and zoom levels
 		if (options.detectRetina && Browser.retina && options.maxZoom > 0) {
@@ -136,7 +127,7 @@ export const TileLayer = GridLayer.extend({
 	// Updates the layer's URL template and redraws it (unless `noRedraw` is set to `true`).
 	// If the URL does not change, the layer will not be redrawn unless
 	// the noRedraw parameter is set to false.
-	setUrl(url, noRedraw) {
+	setUrl: function (url, noRedraw) {
 		if (this._url === url && noRedraw === undefined) {
 			noRedraw = true;
 		}
@@ -153,11 +144,11 @@ export const TileLayer = GridLayer.extend({
 	// Called only internally, overrides GridLayer's [`createTile()`](#gridlayer-createtile)
 	// to return an `<img>` HTML element with the appropriate image URL given `coords`. The `done`
 	// callback is called when the tile has been loaded.
-	createTile(coords, done) {
-		const tile = document.createElement('img');
+	createTile: function (coords, done) {
+		var tile = document.createElement('img');
 
-		DomEvent.on(tile, 'load', this._tileOnLoad.bind(this, done, tile));
-		DomEvent.on(tile, 'error', this._tileOnError.bind(this, done, tile));
+		DomEvent.on(tile, 'load', Util.bind(this._tileOnLoad, this, done, tile));
+		DomEvent.on(tile, 'error', Util.bind(this._tileOnError, this, done, tile));
 
 		if (this.options.crossOrigin || this.options.crossOrigin === '') {
 			tile.crossOrigin = this.options.crossOrigin === true ? '' : this.options.crossOrigin;
@@ -186,8 +177,8 @@ export const TileLayer = GridLayer.extend({
 	// @method getTileUrl(coords: Object): String
 	// Called only internally, returns the URL for a tile given its coordinates.
 	// Classes extending `TileLayer` can override this function to provide custom tile URL naming schemes.
-	getTileUrl(coords) {
-		const data = {
+	getTileUrl: function (coords) {
+		var data = {
 			r: Browser.retina ? '@2x' : '',
 			s: this._getSubdomain(coords),
 			x: coords.x,
@@ -195,7 +186,7 @@ export const TileLayer = GridLayer.extend({
 			z: this._getZoomForUrl()
 		};
 		if (this._map && !this._map.options.crs.infinite) {
-			const invertedY = this._globalTileRange.max.y - coords.y;
+			var invertedY = this._globalTileRange.max.y - coords.y;
 			if (this.options.tms) {
 				data['y'] = invertedY;
 			}
@@ -205,25 +196,30 @@ export const TileLayer = GridLayer.extend({
 		return Util.template(this._url, Util.extend(data, this.options));
 	},
 
-	_tileOnLoad(done, tile) {
-		done(null, tile);
+	_tileOnLoad: function (done, tile) {
+		// For https://github.com/Leaflet/Leaflet/issues/3332
+		if (Browser.ielt9) {
+			setTimeout(Util.bind(done, this, null, tile), 0);
+		} else {
+			done(null, tile);
+		}
 	},
 
-	_tileOnError(done, tile, e) {
-		const errorUrl = this.options.errorTileUrl;
+	_tileOnError: function (done, tile, e) {
+		var errorUrl = this.options.errorTileUrl;
 		if (errorUrl && tile.getAttribute('src') !== errorUrl) {
 			tile.src = errorUrl;
 		}
 		done(e, tile);
 	},
 
-	_onTileRemove(e) {
+	_onTileRemove: function (e) {
 		e.tile.onload = null;
 	},
 
-	_getZoomForUrl() {
-		let zoom = this._tileZoom;
-		const maxZoom = this.options.maxZoom,
+	_getZoomForUrl: function () {
+		var zoom = this._tileZoom,
+		maxZoom = this.options.maxZoom,
 		zoomReverse = this.options.zoomReverse,
 		zoomOffset = this.options.zoomOffset;
 
@@ -234,14 +230,14 @@ export const TileLayer = GridLayer.extend({
 		return zoom + zoomOffset;
 	},
 
-	_getSubdomain(tilePoint) {
-		const index = Math.abs(tilePoint.x + tilePoint.y) % this.options.subdomains.length;
+	_getSubdomain: function (tilePoint) {
+		var index = Math.abs(tilePoint.x + tilePoint.y) % this.options.subdomains.length;
 		return this.options.subdomains[index];
 	},
 
 	// stops loading all tiles in the background layer
-	_abortLoading() {
-		let i, tile;
+	_abortLoading: function () {
+		var i, tile;
 		for (i in this._tiles) {
 			if (this._tiles[i].coords.z !== this._tileZoom) {
 				tile = this._tiles[i].el;
@@ -251,22 +247,22 @@ export const TileLayer = GridLayer.extend({
 
 				if (!tile.complete) {
 					tile.src = Util.emptyImageUrl;
-					const coords = this._tiles[i].coords;
-					tile.remove();
+					var coords = this._tiles[i].coords;
+					DomUtil.remove(tile);
 					delete this._tiles[i];
 					// @event tileabort: TileEvent
 					// Fired when a tile was loading but is now not wanted.
 					this.fire('tileabort', {
-						tile,
-						coords
+						tile: tile,
+						coords: coords
 					});
 				}
 			}
 		}
 	},
 
-	_removeTile(key) {
-		const tile = this._tiles[key];
+	_removeTile: function (key) {
+		var tile = this._tiles[key];
 		if (!tile) { return; }
 
 		// Cancels any pending http requests associated with the tile
@@ -275,16 +271,12 @@ export const TileLayer = GridLayer.extend({
 		return GridLayer.prototype._removeTile.call(this, key);
 	},
 
-	_tileReady(coords, err, tile) {
+	_tileReady: function (coords, err, tile) {
 		if (!this._map || (tile && tile.getAttribute('src') === Util.emptyImageUrl)) {
 			return;
 		}
 
 		return GridLayer.prototype._tileReady.call(this, coords, err, tile);
-	},
-
-	_clampZoom(zoom) {
-		return Math.round(GridLayer.prototype._clampZoom.call(this, zoom));
 	}
 });
 

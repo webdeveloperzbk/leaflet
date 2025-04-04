@@ -5,24 +5,49 @@
  */
 
 // @function extend(dest: Object, src?: Object): Object
-// Merges the properties (including properties inherited through the prototype chain)
-// of the `src` object (or multiple objects) into `dest` object and returns the latter.
-// Has an `L.extend` shortcut.
-export function extend(dest, ...args) {
-	let j, len, src;
+// Merges the properties of the `src` object (or multiple objects) into `dest` object and returns the latter. Has an `L.extend` shortcut.
+export function extend(dest) {
+	var i, j, len, src;
 
-	for (j = 0, len = args.length; j < len; j++) {
-		src = args[j];
-		for (const i in src) {
+	for (j = 1, len = arguments.length; j < len; j++) {
+		src = arguments[j];
+		for (i in src) {
 			dest[i] = src[i];
 		}
 	}
 	return dest;
 }
 
+// @function create(proto: Object, properties?: Object): Object
+// Compatibility polyfill for [Object.create](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object/create)
+export var create = Object.create || (function () {
+	function F() {}
+	return function (proto) {
+		F.prototype = proto;
+		return new F();
+	};
+})();
+
+// @function bind(fn: Function, …): Function
+// Returns a new function bound to the arguments passed, like [Function.prototype.bind](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Function/bind).
+// Has a `L.bind()` shortcut.
+export function bind(fn, obj) {
+	var slice = Array.prototype.slice;
+
+	if (fn.bind) {
+		return fn.bind.apply(fn, slice.call(arguments, 1));
+	}
+
+	var args = slice.call(arguments, 2);
+
+	return function () {
+		return fn.apply(obj, args.length ? args.concat(slice.call(arguments)) : arguments);
+	};
+}
+
 // @property lastId: Number
 // Last unique ID used by [`stamp()`](#util-stamp)
-export let lastId = 0;
+export var lastId = 0;
 
 // @function stamp(obj: Object): Number
 // Returns the unique ID of an object, assigning it one if it doesn't have it.
@@ -41,29 +66,29 @@ export function stamp(obj) {
 // function, followed by any arguments passed when invoking the bound function.
 // Has an `L.throttle` shortcut.
 export function throttle(fn, time, context) {
-	let lock, queuedArgs;
+	var lock, args, wrapperFn, later;
 
-	function later() {
+	later = function () {
 		// reset lock and call if queued
 		lock = false;
-		if (queuedArgs) {
-			wrapperFn.apply(context, queuedArgs);
-			queuedArgs = false;
+		if (args) {
+			wrapperFn.apply(context, args);
+			args = false;
 		}
-	}
+	};
 
-	function wrapperFn(...args) {
+	wrapperFn = function () {
 		if (lock) {
 			// called too soon, queue to call later
-			queuedArgs = args;
+			args = arguments;
 
 		} else {
 			// call and lock until later
-			fn.apply(context, args);
+			fn.apply(context, arguments);
 			setTimeout(later, time);
 			lock = true;
 		}
-	}
+	};
 
 	return wrapperFn;
 }
@@ -73,7 +98,7 @@ export function throttle(fn, time, context) {
 // `range[0]` and `range[1]`. The returned value will be always smaller than
 // `range[1]` unless `includeMax` is set to `true`.
 export function wrapNum(x, range, includeMax) {
-	const max = range[1],
+	var max = range[1],
 	    min = range[0],
 	    d = max - min;
 	return x === max && includeMax ? x : ((x - min) % d + d) % d + min;
@@ -89,26 +114,30 @@ export function falseFn() { return false; }
 // `false` can be passed to skip any processing (can be useful to avoid round-off errors).
 export function formatNum(num, precision) {
 	if (precision === false) { return num; }
-	const pow = Math.pow(10, precision === undefined ? 6 : precision);
+	var pow = Math.pow(10, precision === undefined ? 6 : precision);
 	return Math.round(num * pow) / pow;
+}
+
+// @function trim(str: String): String
+// Compatibility polyfill for [String.prototype.trim](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String/Trim)
+export function trim(str) {
+	return str.trim ? str.trim() : str.replace(/^\s+|\s+$/g, '');
 }
 
 // @function splitWords(str: String): String[]
 // Trims and splits the string on whitespace and returns the array of parts.
 export function splitWords(str) {
-	return str.trim().split(/\s+/);
+	return trim(str).split(/\s+/);
 }
 
 // @function setOptions(obj: Object, options: Object): Object
 // Merges the given properties to the `options` of the `obj` object, returning the resulting options. See `Class options`. Has an `L.setOptions` shortcut.
 export function setOptions(obj, options) {
-	if (!Object.hasOwn(obj, 'options')) {
-		obj.options = obj.options ? Object.create(obj.options) : {};
+	if (!Object.prototype.hasOwnProperty.call(obj, 'options')) {
+		obj.options = obj.options ? create(obj.options) : {};
 	}
-	for (const i in options) {
-		if (Object.hasOwn(options, i)) {
-			obj.options[i] = options[i];
-		}
+	for (var i in options) {
+		obj.options[i] = options[i];
 	}
 	return obj.options;
 }
@@ -119,16 +148,14 @@ export function setOptions(obj, options) {
 // be appended at the end. If `uppercase` is `true`, the parameter names will
 // be uppercased (e.g. `'?A=foo&B=bar'`)
 export function getParamString(obj, existingUrl, uppercase) {
-	const params = [];
-	for (const i in obj) {
-		if (Object.hasOwn(obj, i)) {
-			params.push(`${encodeURIComponent(uppercase ? i.toUpperCase() : i)}=${encodeURIComponent(obj[i])}`);
-		}
+	var params = [];
+	for (var i in obj) {
+		params.push(encodeURIComponent(uppercase ? i.toUpperCase() : i) + '=' + encodeURIComponent(obj[i]));
 	}
-	return ((!existingUrl || !existingUrl.includes('?')) ? '?' : '&') + params.join('&');
+	return ((!existingUrl || existingUrl.indexOf('?') === -1) ? '?' : '&') + params.join('&');
 }
 
-const templateRe = /\{ *([\w_ -]+) *\}/g;
+var templateRe = /\{ *([\w_ -]+) *\}/g;
 
 // @function template(str: String, data: Object): String
 // Simple templating facility, accepts a template string of the form `'Hello {a}, {b}'`
@@ -136,11 +163,11 @@ const templateRe = /\{ *([\w_ -]+) *\}/g;
 // `('Hello foo, bar')`. You can also specify functions instead of strings for
 // data values — they will be evaluated passing `data` as an argument.
 export function template(str, data) {
-	return str.replace(templateRe, (str, key) => {
-		let value = data[key];
+	return str.replace(templateRe, function (str, key) {
+		var value = data[key];
 
 		if (value === undefined) {
-			throw new Error(`No value provided for variable ${str}`);
+			throw new Error('No value provided for variable ' + str);
 
 		} else if (typeof value === 'function') {
 			value = value(data);
@@ -149,8 +176,66 @@ export function template(str, data) {
 	});
 }
 
+// @function isArray(obj): Boolean
+// Compatibility polyfill for [Array.isArray](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array/isArray)
+export var isArray = Array.isArray || function (obj) {
+	return (Object.prototype.toString.call(obj) === '[object Array]');
+};
+
+// @function indexOf(array: Array, el: Object): Number
+// Compatibility polyfill for [Array.prototype.indexOf](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf)
+export function indexOf(array, el) {
+	for (var i = 0; i < array.length; i++) {
+		if (array[i] === el) { return i; }
+	}
+	return -1;
+}
+
 // @property emptyImageUrl: String
 // Data URI string containing a base64-encoded empty GIF image.
 // Used as a hack to free memory from unused images on WebKit-powered
 // mobile devices (by setting image `src` to this string).
-export const emptyImageUrl = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
+export var emptyImageUrl = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
+
+// inspired by https://paulirish.com/2011/requestanimationframe-for-smart-animating/
+
+function getPrefixed(name) {
+	return window['webkit' + name] || window['moz' + name] || window['ms' + name];
+}
+
+var lastTime = 0;
+
+// fallback for IE 7-8
+function timeoutDefer(fn) {
+	var time = +new Date(),
+	    timeToCall = Math.max(0, 16 - (time - lastTime));
+
+	lastTime = time + timeToCall;
+	return window.setTimeout(fn, timeToCall);
+}
+
+export var requestFn = window.requestAnimationFrame || getPrefixed('RequestAnimationFrame') || timeoutDefer;
+export var cancelFn = window.cancelAnimationFrame || getPrefixed('CancelAnimationFrame') ||
+		getPrefixed('CancelRequestAnimationFrame') || function (id) { window.clearTimeout(id); };
+
+// @function requestAnimFrame(fn: Function, context?: Object, immediate?: Boolean): Number
+// Schedules `fn` to be executed when the browser repaints. `fn` is bound to
+// `context` if given. When `immediate` is set, `fn` is called immediately if
+// the browser doesn't have native support for
+// [`window.requestAnimationFrame`](https://developer.mozilla.org/docs/Web/API/window/requestAnimationFrame),
+// otherwise it's delayed. Returns a request ID that can be used to cancel the request.
+export function requestAnimFrame(fn, context, immediate) {
+	if (immediate && requestFn === timeoutDefer) {
+		fn.call(context);
+	} else {
+		return requestFn.call(window, bind(fn, context));
+	}
+}
+
+// @function cancelAnimFrame(id: Number): undefined
+// Cancels a previous `requestAnimFrame`. See also [window.cancelAnimationFrame](https://developer.mozilla.org/docs/Web/API/window/cancelAnimationFrame).
+export function cancelAnimFrame(id) {
+	if (id) {
+		cancelFn.call(window, id);
+	}
+}

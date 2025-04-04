@@ -4,12 +4,12 @@ title: WMS example
 ---
 <script type='text/javascript'>
 
-	const map = L.map('map', {
+	var map = L.map('map', {
 		center: [-17, -67],
 		zoom: 3
 	});
 
-	const wmsLayer = L.tileLayer.wms('http://ows.mundialis.de/services/service?', {
+	var wmsLayer = L.tileLayer.wms('http://ows.mundialis.de/services/service?', {
 		layers: 'SRTM30-Colored-Hillshade'
 	}).addTo(map);
 

@@ -4,23 +4,23 @@ title: Zoom Levels Tutorial
 ---
 <script>
 
-	const map = L.map('map', {
+	var map = L.map('map', {
 		minZoom: 1,
 		maxZoom: 1,
 		dragging: false
 	});
 
-	const cartodbAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/attribution">CARTO</a>';
+	var cartodbAttribution = '&copy; <a href="https://skpdi.mosreg.ru">СКПДИ2 ЦРЦТ</a>, &copy; <a href="https://carto.com/attribution">CARTO</a>';
 
-	const positron = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+	var positron = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
 		attribution: cartodbAttribution
 	}).addTo(map);
 
-	const scaleControl = L.control.scale({maxWidth: 150}).addTo(map);
+	var scaleControl = L.control.scale({maxWidth: 150}).addTo(map);
 
-	setInterval(() => {
+	setInterval(function () {
 		map.setView([0, 0], 0, {duration: 1, animate: true});
-		setTimeout(() => {
+		setTimeout(function () {
 			map.setView([60, 0], 0, {duration: 1, animate: true});
 		}, 2000);
 	}, 4000);

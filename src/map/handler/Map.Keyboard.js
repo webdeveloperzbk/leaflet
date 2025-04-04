@@ -1,7 +1,7 @@
-import {Map} from '../Map.js';
-import {Handler} from '../../core/Handler.js';
-import {on, off, stop} from '../../dom/DomEvent.js';
-import {toPoint} from '../../geometry/Point.js';
+import {Map} from '../Map';
+import {Handler} from '../../core/Handler';
+import {on, off, stop} from '../../dom/DomEvent';
+import {toPoint} from '../../geometry/Point';
 
 
 /*
@@ -21,26 +21,26 @@ Map.mergeOptions({
 	keyboardPanDelta: 80
 });
 
-export const Keyboard = Handler.extend({
+export var Keyboard = Handler.extend({
 
 	keyCodes: {
-		left:    ['ArrowLeft'],
-		right:   ['ArrowRight'],
-		down:    ['ArrowDown'],
-		up:      ['ArrowUp'],
-		zoomIn:  ['Equal', 'NumpadAdd', 'BracketRight'],
-		zoomOut: ['Minus', 'NumpadSubtract', 'Digit6', 'Slash']
+		left:    [37],
+		right:   [39],
+		down:    [40],
+		up:      [38],
+		zoomIn:  [187, 107, 61, 171],
+		zoomOut: [189, 109, 54, 173]
 	},
 
-	initialize(map) {
+	initialize: function (map) {
 		this._map = map;
 
 		this._setPanDelta(map.options.keyboardPanDelta);
 		this._setZoomDelta(map.options.zoomDelta);
 	},
 
-	addHooks() {
-		const container = this._map._container;
+	addHooks: function () {
+		var container = this._map._container;
 
 		// make the container focusable by tabbing
 		if (container.tabIndex <= 0) {
@@ -50,7 +50,7 @@ export const Keyboard = Handler.extend({
 		on(container, {
 			focus: this._onFocus,
 			blur: this._onBlur,
-			pointerdown: this._onPointerDown
+			mousedown: this._onMouseDown
 		}, this);
 
 		this._map.on({
@@ -59,13 +59,13 @@ export const Keyboard = Handler.extend({
 		}, this);
 	},
 
-	removeHooks() {
+	removeHooks: function () {
 		this._removeHooks();
 
 		off(this._map._container, {
 			focus: this._onFocus,
 			blur: this._onBlur,
-			pointerdown: this._onPointerDown
+			mousedown: this._onMouseDown
 		}, this);
 
 		this._map.off({
@@ -74,11 +74,10 @@ export const Keyboard = Handler.extend({
 		}, this);
 	},
 
-	//  acquire/lose focus #594, #1228, #1540
-	_onPointerDown() {
+	_onMouseDown: function () {
 		if (this._focused) { return; }
 
-		const body = document.body,
+		var body = document.body,
 		    docEl = document.documentElement,
 		    top = body.scrollTop || docEl.scrollTop,
 		    left = body.scrollLeft || docEl.scrollLeft;
@@ -88,20 +87,20 @@ export const Keyboard = Handler.extend({
 		window.scrollTo(left, top);
 	},
 
-	_onFocus() {
+	_onFocus: function () {
 		this._focused = true;
 		this._map.fire('focus');
 	},
 
-	_onBlur() {
+	_onBlur: function () {
 		this._focused = false;
 		this._map.fire('blur');
 	},
 
-	_setPanDelta(panDelta) {
-		const keys = this._panKeys = {},
-		    codes = this.keyCodes;
-		let i, len;
+	_setPanDelta: function (panDelta) {
+		var keys = this._panKeys = {},
+		    codes = this.keyCodes,
+		    i, len;
 
 		for (i = 0, len = codes.left.length; i < len; i++) {
 			keys[codes.left[i]] = [-1 * panDelta, 0];
@@ -117,10 +116,10 @@ export const Keyboard = Handler.extend({
 		}
 	},
 
-	_setZoomDelta(zoomDelta) {
-		const keys = this._zoomKeys = {},
-		      codes = this.keyCodes;
-		let i, len;
+	_setZoomDelta: function (zoomDelta) {
+		var keys = this._zoomKeys = {},
+		    codes = this.keyCodes,
+		    i, len;
 
 		for (i = 0, len = codes.zoomIn.length; i < len; i++) {
 			keys[codes.zoomIn[i]] = zoomDelta;
@@ -130,20 +129,20 @@ export const Keyboard = Handler.extend({
 		}
 	},
 
-	_addHooks() {
+	_addHooks: function () {
 		on(document, 'keydown', this._onKeyDown, this);
 	},
 
-	_removeHooks() {
+	_removeHooks: function () {
 		off(document, 'keydown', this._onKeyDown, this);
 	},
 
-	_onKeyDown(e) {
+	_onKeyDown: function (e) {
 		if (e.altKey || e.ctrlKey || e.metaKey) { return; }
 
-		const key = e.code,
-		     map = this._map;
-		let offset;
+		var key = e.keyCode,
+		    map = this._map,
+		    offset;
 
 		if (key in this._panKeys) {
 			if (!map._panAnim || !map._panAnim._inProgress) {
@@ -157,7 +156,7 @@ export const Keyboard = Handler.extend({
 				}
 
 				if (map.options.worldCopyJump) {
-					const newLatLng = map.wrapLatLng(map.unproject(map.project(map.getCenter()).add(offset)));
+					var newLatLng = map.wrapLatLng(map.unproject(map.project(map.getCenter()).add(offset)));
 					map.panTo(newLatLng);
 				} else {
 					map.panBy(offset);
@@ -166,7 +165,7 @@ export const Keyboard = Handler.extend({
 		} else if (key in this._zoomKeys) {
 			map.setZoom(map.getZoom() + (e.shiftKey ? 3 : 1) * this._zoomKeys[key]);
 
-		} else if (key === 'Escape' && map._popup && map._popup.options.closeOnEscapeKey) {
+		} else if (key === 27 && map._popup && map._popup.options.closeOnEscapeKey) {
 			map.closePopup();
 
 		} else {

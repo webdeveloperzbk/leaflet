@@ -1,4 +1,5 @@
-import {Point} from './Point.js';
+import {Point} from './Point';
+import * as Util from '../core/Util';
 
 /*
  * @class Transformation
@@ -22,7 +23,7 @@ import {Point} from './Point.js';
 // factory new L.Transformation(a: Number, b: Number, c: Number, d: Number)
 // Creates a `Transformation` object with the given coefficients.
 export function Transformation(a, b, c, d) {
-	if (Array.isArray(a)) {
+	if (Util.isArray(a)) {
 		// use array properties
 		this._a = a[0];
 		this._b = a[1];
@@ -40,12 +41,12 @@ Transformation.prototype = {
 	// @method transform(point: Point, scale?: Number): Point
 	// Returns a transformed point, optionally multiplied by the given scale.
 	// Only accepts actual `L.Point` instances, not arrays.
-	transform(point, scale) { // (Point, Number) -> Point
+	transform: function (point, scale) { // (Point, Number) -> Point
 		return this._transform(point.clone(), scale);
 	},
 
 	// destructive transform (faster)
-	_transform(point, scale) {
+	_transform: function (point, scale) {
 		scale = scale || 1;
 		point.x = scale * (this._a * point.x + this._b);
 		point.y = scale * (this._c * point.y + this._d);
@@ -55,7 +56,7 @@ Transformation.prototype = {
 	// @method untransform(point: Point, scale?: Number): Point
 	// Returns the reverse transformation of the given point, optionally divided
 	// by the given scale. Only accepts actual `L.Point` instances, not arrays.
-	untransform(point, scale) {
+	untransform: function (point, scale) {
 		scale = scale || 1;
 		return new Point(
 		        (point.x / scale - this._b) / this._a,

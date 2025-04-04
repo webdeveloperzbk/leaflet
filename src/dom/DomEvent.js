@@ -1,9 +1,9 @@
-import {Point} from '../geometry/Point.js';
-import * as Util from '../core/Util.js';
-import Browser from '../core/Browser.js';
-import {addPointerListener, removePointerListener} from './DomEvent.Pointer.js';
-import {addDoubleTapListener, removeDoubleTapListener} from './DomEvent.DoubleTap.js';
-import {getScale} from './DomUtil.js';
+import {Point} from '../geometry/Point';
+import * as Util from '../core/Util';
+import Browser from '../core/Browser';
+import {addPointerListener, removePointerListener} from './DomEvent.Pointer';
+import {addDoubleTapListener, removeDoubleTapListener} from './DomEvent.DoubleTap';
+import {getScale} from './DomUtil';
 
 /*
  * @namespace DomEvent
@@ -24,13 +24,13 @@ import {getScale} from './DomUtil.js';
 export function on(obj, types, fn, context) {
 
 	if (types && typeof types === 'object') {
-		for (const [type, listener] of Object.entries(types)) {
-			addOne(obj, type, listener, fn);
+		for (var type in types) {
+			addOne(obj, type, types[type], fn);
 		}
 	} else {
 		types = Util.splitWords(types);
 
-		for (let i = 0, len = types.length; i < len; i++) {
+		for (var i = 0, len = types.length; i < len; i++) {
 			addOne(obj, types[i], fn, context);
 		}
 	}
@@ -38,7 +38,7 @@ export function on(obj, types, fn, context) {
 	return this;
 }
 
-const eventsKey = '_leaflet_events';
+var eventsKey = '_leaflet_events';
 
 // @function off(el: HTMLElement, types: String, fn: Function, context?: Object): this
 // Removes a previously added listener function.
@@ -63,17 +63,19 @@ export function off(obj, types, fn, context) {
 		delete obj[eventsKey];
 
 	} else if (types && typeof types === 'object') {
-		for (const [type, listener] of Object.entries(types)) {
-			removeOne(obj, type, listener, fn);
+		for (var type in types) {
+			removeOne(obj, type, types[type], fn);
 		}
 
 	} else {
 		types = Util.splitWords(types);
 
 		if (arguments.length === 2) {
-			batchRemove(obj, type => types.includes(type));
+			batchRemove(obj, function (type) {
+				return Util.indexOf(types, type) !== -1;
+			});
 		} else {
-			for (let i = 0, len = types.length; i < len; i++) {
+			for (var i = 0, len = types.length; i < len; i++) {
 				removeOne(obj, types[i], fn, context);
 			}
 		}
@@ -83,34 +85,32 @@ export function off(obj, types, fn, context) {
 }
 
 function batchRemove(obj, filterFn) {
-	for (const id in obj[eventsKey]) {
-		if (Object.hasOwn(obj[eventsKey], id)) {
-			const type = id.split(/\d/)[0];
-			if (!filterFn || filterFn(type)) {
-				removeOne(obj, type, null, null, id);
-			}
+	for (var id in obj[eventsKey]) {
+		var type = id.split(/\d/)[0];
+		if (!filterFn || filterFn(type)) {
+			removeOne(obj, type, null, null, id);
 		}
 	}
 }
 
-const mouseSubst = {
+var mouseSubst = {
 	mouseenter: 'mouseover',
 	mouseleave: 'mouseout',
-	wheel: typeof window === 'undefined' ? false : !('onwheel' in window) && 'mousewheel'
+	wheel: !('onwheel' in window) && 'mousewheel'
 };
 
 function addOne(obj, type, fn, context) {
-	const id = type + Util.stamp(fn) + (context ? `_${Util.stamp(context)}` : '');
+	var id = type + Util.stamp(fn) + (context ? '_' + Util.stamp(context) : '');
 
 	if (obj[eventsKey] && obj[eventsKey][id]) { return this; }
 
-	let handler = function (e) {
+	var handler = function (e) {
 		return fn.call(context || obj, e || window.event);
 	};
 
-	const originalHandler = handler;
+	var originalHandler = handler;
 
-	if (!Browser.touchNative && Browser.pointer && type.startsWith('touch')) {
+	if (!Browser.touchNative && Browser.pointer && type.indexOf('touch') === 0) {
 		// Needs DomEvent.Pointer.js
 		handler = addPointerListener(obj, type, handler);
 
@@ -120,7 +120,7 @@ function addOne(obj, type, fn, context) {
 	} else if ('addEventListener' in obj) {
 
 		if (type === 'touchstart' || type === 'touchmove' || type === 'wheel' ||  type === 'mousewheel') {
-			obj.addEventListener(mouseSubst[type] || type, handler, {passive: false});
+			obj.addEventListener(mouseSubst[type] || type, handler, Browser.passiveEvents ? {passive: false} : false);
 
 		} else if (type === 'mouseenter' || type === 'mouseleave') {
 			handler = function (e) {
@@ -136,7 +136,7 @@ function addOne(obj, type, fn, context) {
 		}
 
 	} else {
-		obj.attachEvent(`on${type}`, handler);
+		obj.attachEvent('on' + type, handler);
 	}
 
 	obj[eventsKey] = obj[eventsKey] || {};
@@ -144,12 +144,12 @@ function addOne(obj, type, fn, context) {
 }
 
 function removeOne(obj, type, fn, context, id) {
-	id = id || type + Util.stamp(fn) + (context ? `_${Util.stamp(context)}` : '');
-	const handler = obj[eventsKey] && obj[eventsKey][id];
+	id = id || type + Util.stamp(fn) + (context ? '_' + Util.stamp(context) : '');
+	var handler = obj[eventsKey] && obj[eventsKey][id];
 
 	if (!handler) { return this; }
 
-	if (!Browser.touchNative && Browser.pointer && type.startsWith('touch')) {
+	if (!Browser.touchNative && Browser.pointer && type.indexOf('touch') === 0) {
 		removePointerListener(obj, type, handler);
 
 	} else if (Browser.touch && (type === 'dblclick')) {
@@ -160,7 +160,7 @@ function removeOne(obj, type, fn, context, id) {
 		obj.removeEventListener(mouseSubst[type] || type, handler, false);
 
 	} else {
-		obj.detachEvent(`on${type}`, handler);
+		obj.detachEvent('on' + type, handler);
 	}
 
 	obj[eventsKey][id] = null;
@@ -233,8 +233,8 @@ export function getPropagationPath(ev) {
 		return ev.composedPath();
 	}
 
-	const path = [];
-	let el = ev.target;
+	var path = [];
+	var el = ev.target;
 
 	while (el) {
 		path.push(el);
@@ -252,7 +252,7 @@ export function getMousePosition(e, container) {
 		return new Point(e.clientX, e.clientY);
 	}
 
-	const scale = getScale(container),
+	var scale = getScale(container),
 	    offset = scale.boundingClientRect; // left and top  values are in page scale (like the event clientX/Y)
 
 	return new Point(
@@ -263,24 +263,23 @@ export function getMousePosition(e, container) {
 	);
 }
 
-// @function getWheelPxFactor(): Number
-// Gets the wheel pixel factor based on the devicePixelRatio
-export function getWheelPxFactor() {
-	// We need double the scroll pixels (see #7403 and #4538) for all Browsers
-	// except OSX (Mac) -> 3x, Chrome running on Linux 1x
-	const ratio = window.devicePixelRatio;
-	return Browser.linux && Browser.chrome ? ratio :
-		Browser.mac ? ratio * 3 :
-		ratio > 0 ? 2 * ratio : 1;
-}
 
+//  except , Safari and
+// We need double the scroll pixels (see #7403 and #4538) for all Browsers
+// except OSX (Mac) -> 3x, Chrome running on Linux 1x
+
+var wheelPxFactor =
+	(Browser.linux && Browser.chrome) ? window.devicePixelRatio :
+	Browser.mac ? window.devicePixelRatio * 3 :
+	window.devicePixelRatio > 0 ? 2 * window.devicePixelRatio : 1;
 // @function getWheelDelta(ev: DOMEvent): Number
 // Gets normalized wheel delta from a wheel DOM event, in vertical
 // pixels scrolled (negative if scrolling down).
 // Events from pointing devices without precise scrolling are mapped to
 // a best guess of 60 pixels.
 export function getWheelDelta(e) {
-	return (e.deltaY && e.deltaMode === 0) ? -e.deltaY / getWheelPxFactor() : // Pixels
+	return (Browser.edge) ? e.wheelDeltaY / 2 : // Don't trust window-geometry-based delta
+	       (e.deltaY && e.deltaMode === 0) ? -e.deltaY / wheelPxFactor : // Pixels
 	       (e.deltaY && e.deltaMode === 1) ? -e.deltaY * 20 : // Lines
 	       (e.deltaY && e.deltaMode === 2) ? -e.deltaY * 60 : // Pages
 	       (e.deltaX || e.deltaZ) ? 0 :	// Skip horizontal/depth wheel events
@@ -293,7 +292,7 @@ export function getWheelDelta(e) {
 // check if element really left/entered the event target (for mouseenter/mouseleave)
 export function isExternalTarget(el, e) {
 
-	let related = e.relatedTarget;
+	var related = e.relatedTarget;
 
 	if (!related) { return true; }
 

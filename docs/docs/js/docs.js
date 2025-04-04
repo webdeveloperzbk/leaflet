@@ -1,19 +1,21 @@
-/* global hljs, L */
+/* global hljs */
 hljs.configure({tabReplace: '    '});
 hljs.initHighlighting();
 
-const tocCopy = document.createElement('div');
+var tocCopy = document.createElement('div');
 tocCopy.id = 'toc-copy';
 
-const toc = document.querySelector('#toc');
+var toc = document.querySelector('#toc');
 
 if (toc) {
+	var currentAnchor = '';
+
 	// top menu
-	let menus = document.querySelectorAll('#toc a');
-	let i;
+	var menus = document.querySelectorAll('#toc a');
+	var i;
 
 	for (i = 0; i < menus.length; i++) {
-		menus[i].addEventListener('click', (e) => {
+		menus[i].addEventListener('click', function (e) {
 			clickOnAnchor(e);
 		});
 	}
@@ -34,12 +36,12 @@ if (toc) {
 			this.previousElementSibling.classList.remove('hover');
 		});
 
-		menus[i].addEventListener('click', (e) => {
+		menus[i].addEventListener('click', function (e) {
 			clickOnAnchor(e);
 		});
 	}
 
-	const labels = document.querySelectorAll('#toc-copy h4');
+	var labels = document.querySelectorAll('#toc-copy h4');
 
 	for (i = 0; i < labels.length; i++) {
 		labels[i].addEventListener('click', function () {
@@ -53,8 +55,8 @@ if (toc) {
 		}
 	});
 
-	const scrollPos = function scrollPos() {
-		const scroll = window.scrollY;
+	var scrollPos = function scrollPos() {
+		var scroll = window.scrollY;
 
 		if (scroll >= (toc.offsetHeight + toc.offsetTop)) {
 			document.body.classList.add('scrolled');
@@ -65,24 +67,23 @@ if (toc) {
 
 	scrollPos();
 
-	window.addEventListener('scroll', () => {
+	window.addEventListener('scroll', function () {
 		scrollPos();
 	});
 
-	window.addEventListener('load', () => {
-		const currentHash = window.location.hash;
+	window.addEventListener('load', function () {
+		var currentHash = window.location.hash;
 		if (!currentHash) { return; }
-		const elem = document.querySelector(currentHash);
+		var elem = document.querySelector(currentHash);
 
 		if (elem.tagName === 'H2' || elem.tagName === 'H4') {
-			setTimeout(() => {
+			setTimeout(()=>{
 				scrollToHeader(elem, true);
 			}, 10);
 		}
 	}, false);
 }
 
-let currentAnchor = '';
 
 function clickOnAnchor(e) {
 	// if the parent element of <a> is clicked we ignore it
@@ -90,17 +91,17 @@ function clickOnAnchor(e) {
 		return;
 	}
 
-	const anchor = `#${e.target.href.split('#')[1]}`;
-	const elemHeader = document.querySelector(anchor);
+	var anchor = '#' + e.target.href.split('#')[1];
+	var elemHeader = document.querySelector(anchor);
 
-	scrollToHeader(elemHeader, `#${elemHeader.id}` === currentAnchor);
+	scrollToHeader(elemHeader, '#' + elemHeader.id === currentAnchor);
 
 	// prevent default browser anchor scroll
 	e.preventDefault();
 }
 
 function scrollToHeader(elemHeader, sameAnchor) {
-	let scrollBy = elemHeader.nextSibling.offsetTop;
+	var scrollBy = elemHeader.nextSibling.offsetTop;
 
 	if (L.Browser.chrome && sameAnchor) {
 		// chromium remove the anchor element from the scroll-position
@@ -113,27 +114,5 @@ function scrollToHeader(elemHeader, sameAnchor) {
 	// scroll to the anchor
 	window.scrollTo(0, scrollBy);
 	// apply the new anchor to the location url
-	currentAnchor = window.location.hash = `#${elemHeader.id}`;
+	currentAnchor = window.location.hash = '#' + elemHeader.id;
 }
-
-const backToTop = document.querySelector('#back-to-top');
-backToTop.addEventListener('click', () => {
-	document.documentElement.scrollIntoView({behavior: 'smooth'});
-});
-
-let lastScrollY = window.scrollY;
-const scrollEventHandler = function scrollEventHandler() {
-	const {scrollY} = window;
-
-	if (scrollY !== 0 && scrollY < lastScrollY) {
-		backToTop.classList.add('is-visible');
-	} else {
-		backToTop.classList.remove('is-visible');
-	}
-
-	lastScrollY = scrollY;
-};
-
-window.addEventListener('scroll', () => {
-	scrollEventHandler();
-});

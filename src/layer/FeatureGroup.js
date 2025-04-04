@@ -1,5 +1,5 @@
-import {LayerGroup} from './LayerGroup.js';
-import {LatLngBounds} from '../geo/LatLngBounds.js';
+import {LayerGroup} from './LayerGroup';
+import {LatLngBounds} from '../geo/LatLngBounds';
 
 /*
  * @class FeatureGroup
@@ -23,9 +23,9 @@ import {LatLngBounds} from '../geo/LatLngBounds.js';
  * ```
  */
 
-export const FeatureGroup = LayerGroup.extend({
+export var FeatureGroup = LayerGroup.extend({
 
-	addLayer(layer) {
+	addLayer: function (layer) {
 		if (this.hasLayer(layer)) {
 			return this;
 		}
@@ -36,10 +36,10 @@ export const FeatureGroup = LayerGroup.extend({
 
 		// @event layeradd: LayerEvent
 		// Fired when a layer is added to this `FeatureGroup`
-		return this.fire('layeradd', {layer});
+		return this.fire('layeradd', {layer: layer});
 	},
 
-	removeLayer(layer) {
+	removeLayer: function (layer) {
 		if (!this.hasLayer(layer)) {
 			return this;
 		}
@@ -53,37 +53,35 @@ export const FeatureGroup = LayerGroup.extend({
 
 		// @event layerremove: LayerEvent
 		// Fired when a layer is removed from this `FeatureGroup`
-		return this.fire('layerremove', {layer});
+		return this.fire('layerremove', {layer: layer});
 	},
 
 	// @method setStyle(style: Path options): this
 	// Sets the given path options to each layer of the group that has a `setStyle` method.
-	setStyle(style) {
+	setStyle: function (style) {
 		return this.invoke('setStyle', style);
 	},
 
 	// @method bringToFront(): this
 	// Brings the layer group to the top of all other layers
-	bringToFront() {
+	bringToFront: function () {
 		return this.invoke('bringToFront');
 	},
 
 	// @method bringToBack(): this
 	// Brings the layer group to the back of all other layers
-	bringToBack() {
+	bringToBack: function () {
 		return this.invoke('bringToBack');
 	},
 
 	// @method getBounds(): LatLngBounds
 	// Returns the LatLngBounds of the Feature Group (created from bounds and coordinates of its children).
-	getBounds() {
-		const bounds = new LatLngBounds();
+	getBounds: function () {
+		var bounds = new LatLngBounds();
 
-		for (const id in this._layers) {
-			if (Object.hasOwn(this._layers, id)) {
-				const layer = this._layers[id];
-				bounds.extend(layer.getBounds ? layer.getBounds() : layer.getLatLng());
-			}
+		for (var id in this._layers) {
+			var layer = this._layers[id];
+			bounds.extend(layer.getBounds ? layer.getBounds() : layer.getLatLng());
 		}
 		return bounds;
 	}
@@ -91,6 +89,6 @@ export const FeatureGroup = LayerGroup.extend({
 
 // @factory L.featureGroup(layers?: Layer[], options?: Object)
 // Create a feature group, optionally given an initial set of layers and an `options` object.
-export const featureGroup = function (layers, options) {
+export var featureGroup = function (layers, options) {
 	return new FeatureGroup(layers, options);
 };

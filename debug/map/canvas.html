@@ -1,51 +1,48 @@
-<!doctype html>
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<title>Leaflet debug page - Canvas</title>
-		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=0" />
-		<link rel="stylesheet" href="../../dist/leaflet.css" />
-		<link rel="stylesheet" href="../css/screen.css" />
-		<script type="importmap">
-			{
-				"imports": {
-					"leaflet": "../../dist/leaflet-src.js"
-				}
-			}
-		</script>
-	</head>
-	<body>
-		<div id="map"></div>
-		<script type="module">
-			import {GridLayer, Map, LatLng} from 'leaflet';
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Leaflet debug page</title>
 
-			const tiles = new GridLayer();
+	<link rel="stylesheet" href="../../dist/leaflet.css" />
 
-			tiles.createTile = function (coords) {
-				const tile = document.createElement('canvas'),
-				      ctx = tile.getContext('2d');
+	<link rel="stylesheet" href="../css/screen.css" />
 
-				tile.width = tile.height = 256;
+	<script src="../../dist/leaflet-src.js"></script>
+</head>
+<body>
 
-				ctx.fillStyle = 'white';
-				ctx.fillRect(0, 0, 255, 255);
+	<div id="map" style="width: 600px; height: 600px; border: 1px solid #ccc"></div>
 
-				ctx.fillStyle = 'black';
-				ctx.fillText(`x: ${coords.x}, y: ${coords.y}, zoom: ${coords.z}`, 20, 20);
+	<script>
 
-				ctx.strokeStyle = 'red';
-				ctx.beginPath();
-				ctx.moveTo(0, 0);
-				ctx.lineTo(255, 0);
-				ctx.lineTo(255, 255);
-				ctx.lineTo(0, 255);
-				ctx.closePath();
-				ctx.stroke();
+		var tiles = new L.GridLayer();
 
-				return tile;
-			};
+		tiles.createTile = function(coords) {
+			var tile = document.createElement('canvas'),
+			    ctx = tile.getContext('2d');
 
-			new Map('map', {center: new LatLng(50.5, 30.51), zoom: 15, layers: [tiles]});
-		</script>
-	</body>
+			tile.width = tile.height = 256;
+
+			ctx.fillStyle = 'white';
+			ctx.fillRect(0, 0, 255, 255);
+
+			ctx.fillStyle = 'black';
+			ctx.fillText('x: ' + coords.x + ', y: ' + coords.y + ', zoom: ' + coords.z, 20, 20);
+
+			ctx.strokeStyle = 'red';
+			ctx.beginPath();
+			ctx.moveTo(0, 0);
+			ctx.lineTo(255, 0);
+			ctx.lineTo(255, 255);
+			ctx.lineTo(0, 255);
+			ctx.closePath();
+			ctx.stroke();
+
+			return tile;
+		}
+
+		var map = new L.Map('map', {center: new L.LatLng(50.5, 30.51), zoom: 15, layers: [tiles]});
+
+	</script>
+</body>
 </html>

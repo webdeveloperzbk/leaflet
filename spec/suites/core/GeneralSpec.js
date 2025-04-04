@@ -1,8 +1,12 @@
-import L from 'leaflet-bundle';
-import {expect} from 'chai';
+describe('General', function () {
+	it('noConflict', function () {
+		var leaflet = L;
+		expect(L.noConflict()).to.eql(leaflet);
+		expect(L).to.eql(undefined);
+		L = leaflet;
+	});
 
-describe('General', () => {
-	it('namespace extension', () => {
+	it('namespace extension', function () {
 		L.Util.foo = 'bar';
 		L.Foo = 'Bar';
 

@@ -26,24 +26,24 @@ title: Tilt handler
 
 <script type='text/javascript'>
 
-	const trd = [63.41, 10.41];
+	var trd = [63.41, 10.41];
 	
 	L.TiltHandler = L.Handler.extend({
-		addHooks() {
+		addHooks: function () {
 			L.DomEvent.on(window, 'deviceorientation', this._tilt, this);
 		},
 	
-		removeHooks() {
+		removeHooks: function () {
 			L.DomEvent.off(window, 'deviceorientation', this._tilt, this);
 		},
 
-		_tilt(ev) {
+		_tilt: function (ev) {
 			// Treat Gamma angle as horizontal pan (1 degree = 1 pixel) and Beta angle as vertical pan
-			const offset = L.point(ev.gamma, ev.beta);
-			let info;
+			var info;
+			var offset = L.point(ev.gamma, ev.beta);
 			if (offset) {
 				this._map.panBy(offset);
-				info = `${ev.gamma},${ev.beta}`;
+				info = ev.gamma + ',' + ev.beta;
 			} else {
 				info = 'Device orientation not detected';
 			}
@@ -53,13 +53,13 @@ title: Tilt handler
 	
 	L.Map.addInitHook('addHandler', 'tilt', L.TiltHandler);
 
-	const map = L.map('map', {
+	var map = L.map('map', {
 		center: [0, 0],
 		zoom: 1,
 		tilt: true
 	});
 
-	const osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+	var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 		maxZoom: 19,
 		attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 	}).addTo(map);

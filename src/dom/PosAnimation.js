@@ -1,12 +1,13 @@
-import {Evented} from '../core/Events.js';
-import * as DomUtil from '../dom/DomUtil.js';
+import * as Util from '../core/Util';
+import {Evented} from '../core/Events';
+import * as DomUtil from '../dom/DomUtil';
 
 
 /*
  * @class PosAnimation
  * @aka L.PosAnimation
  * @inherits Evented
- * Used internally for panning animations and utilizing CSS Transitions for modern browsers.
+ * Used internally for panning animations, utilizing CSS3 Transitions for modern browsers and a timer fallback for IE6-9.
  *
  * @example
  * ```js
@@ -32,14 +33,14 @@ import * as DomUtil from '../dom/DomUtil.js';
  *
  */
 
-export const PosAnimation = Evented.extend({
+export var PosAnimation = Evented.extend({
 
 	// @method run(el: HTMLElement, newPos: Point, duration?: Number, easeLinearity?: Number)
 	// Run an animation of a given element to a new position, optionally setting
 	// duration in seconds (`0.25` by default) and easing linearity factor (3rd
 	// argument of the [cubic bezier curve](https://cubic-bezier.com/#0,0,.5,1),
 	// `0.5` by default).
-	run(el, newPos, duration, easeLinearity) {
+	run: function (el, newPos, duration, easeLinearity) {
 		this.stop();
 
 		this._el = el;
@@ -60,21 +61,21 @@ export const PosAnimation = Evented.extend({
 
 	// @method stop()
 	// Stops the animation (if currently running).
-	stop() {
+	stop: function () {
 		if (!this._inProgress) { return; }
 
 		this._step(true);
 		this._complete();
 	},
 
-	_animate() {
+	_animate: function () {
 		// animation loop
-		this._animId = requestAnimationFrame(this._animate.bind(this));
+		this._animId = Util.requestAnimFrame(this._animate, this);
 		this._step();
 	},
 
-	_step(round) {
-		const elapsed = (+new Date()) - this._startTime,
+	_step: function (round) {
+		var elapsed = (+new Date()) - this._startTime,
 		    duration = this._duration * 1000;
 
 		if (elapsed < duration) {
@@ -85,8 +86,8 @@ export const PosAnimation = Evented.extend({
 		}
 	},
 
-	_runFrame(progress, round) {
-		const pos = this._startPos.add(this._offset.multiplyBy(progress));
+	_runFrame: function (progress, round) {
+		var pos = this._startPos.add(this._offset.multiplyBy(progress));
 		if (round) {
 			pos._round();
 		}
@@ -97,8 +98,8 @@ export const PosAnimation = Evented.extend({
 		this.fire('step');
 	},
 
-	_complete() {
-		cancelAnimationFrame(this._animId);
+	_complete: function () {
+		Util.cancelAnimFrame(this._animId);
 
 		this._inProgress = false;
 		// @event end: Event
@@ -106,7 +107,7 @@ export const PosAnimation = Evented.extend({
 		this.fire('end');
 	},
 
-	_easeOut(t) {
+	_easeOut: function (t) {
 		return 1 - Math.pow(1 - t, this._easeOutPower);
 	}
 });

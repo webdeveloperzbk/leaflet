@@ -1,9 +1,7 @@
-import LeafDoc from 'leafdoc';
-import {writeFileSync} from 'node:fs';
-
 console.log('Building Leaflet documentation with Leafdoc ...');
 
-const doc = new LeafDoc({
+var LeafDoc = require('leafdoc');
+var doc = new LeafDoc({
 	templateDir: 'build/leafdoc-templates',
 	showInheritancesWhenEmpty: true,
 	leadingCharacter: '@'
@@ -24,8 +22,10 @@ doc.addFile('build/docs-index.leafdoc', false);
 doc.addDir('src');
 doc.addFile('build/docs-misc.leafdoc', false);
 
-const out = doc.outputStr();
-const path = 'docs/reference.html';
+var out = doc.outputStr();
+var path = 'docs/reference.html';
 
-writeFileSync(path, out);
-console.log(`Successfully built ${path}`);
+var fs = require('fs');
+
+fs.writeFileSync(path, out);
+console.log('Successfully built ' + path);

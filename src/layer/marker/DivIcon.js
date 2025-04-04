@@ -1,5 +1,6 @@
-import {Icon} from './Icon.js';
-import {toPoint as point} from '../../geometry/Point.js';
+import {Icon} from './Icon';
+import {toPoint as point} from '../../geometry/Point';
+import {empty} from '../../dom/DomUtil';
 
 /*
  * @class DivIcon
@@ -20,7 +21,7 @@ import {toPoint as point} from '../../geometry/Point.js';
  * By default, it has a 'leaflet-div-icon' CSS class and is styled as a little white square with a shadow.
  */
 
-export const DivIcon = Icon.extend({
+export var DivIcon = Icon.extend({
 	options: {
 		// @section
 		// @aka DivIcon options
@@ -41,27 +42,27 @@ export const DivIcon = Icon.extend({
 		className: 'leaflet-div-icon'
 	},
 
-	createIcon(oldIcon) {
-		const div = (oldIcon && oldIcon.tagName === 'DIV') ? oldIcon : document.createElement('div'),
+	createIcon: function (oldIcon) {
+		var div = (oldIcon && oldIcon.tagName === 'DIV') ? oldIcon : document.createElement('div'),
 		    options = this.options;
 
 		if (options.html instanceof Element) {
-			div.replaceChildren();
+			empty(div);
 			div.appendChild(options.html);
 		} else {
 			div.innerHTML = options.html !== false ? options.html : '';
 		}
 
 		if (options.bgPos) {
-			const bgPos = point(options.bgPos);
-			div.style.backgroundPosition = `${-bgPos.x}px ${-bgPos.y}px`;
+			var bgPos = point(options.bgPos);
+			div.style.backgroundPosition = (-bgPos.x) + 'px ' + (-bgPos.y) + 'px';
 		}
 		this._setIconStyles(div, 'icon');
 
 		return div;
 	},
 
-	createShadow() {
+	createShadow: function () {
 		return null;
 	}
 });

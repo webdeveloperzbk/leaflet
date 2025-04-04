@@ -1,7 +1,7 @@
-import {Class} from '../../core/Class.js';
-import {setOptions} from '../../core/Util.js';
-import {toPoint as point} from '../../geometry/Point.js';
-import Browser from '../../core/Browser.js';
+import {Class} from '../../core/Class';
+import {setOptions} from '../../core/Util';
+import {toPoint as point} from '../../geometry/Point';
+import Browser from '../../core/Browser';
 
 /*
  * @class Icon
@@ -31,7 +31,7 @@ import Browser from '../../core/Browser.js';
  *
  */
 
-export const Icon = Class.extend({
+export var Icon = Class.extend({
 
 	/* @section
 	 * @aka Icon options
@@ -84,25 +84,25 @@ export const Icon = Class.extend({
 		crossOrigin: false
 	},
 
-	initialize(options) {
+	initialize: function (options) {
 		setOptions(this, options);
 	},
 
 	// @method createIcon(oldIcon?: HTMLElement): HTMLElement
 	// Called internally when the icon has to be shown, returns a `<img>` HTML element
 	// styled according to the options.
-	createIcon(oldIcon) {
+	createIcon: function (oldIcon) {
 		return this._createIcon('icon', oldIcon);
 	},
 
 	// @method createShadow(oldIcon?: HTMLElement): HTMLElement
 	// As `createIcon`, but for the shadow beneath it.
-	createShadow(oldIcon) {
+	createShadow: function (oldIcon) {
 		return this._createIcon('shadow', oldIcon);
 	},
 
-	_createIcon(name, oldIcon) {
-		const src = this._getIconUrl(name);
+	_createIcon: function (name, oldIcon) {
+		var src = this._getIconUrl(name);
 
 		if (!src) {
 			if (name === 'icon') {
@@ -111,7 +111,7 @@ export const Icon = Class.extend({
 			return null;
 		}
 
-		const img = this._createImg(src, oldIcon && oldIcon.tagName === 'IMG' ? oldIcon : null);
+		var img = this._createImg(src, oldIcon && oldIcon.tagName === 'IMG' ? oldIcon : null);
 		this._setIconStyles(img, name);
 
 		if (this.options.crossOrigin || this.options.crossOrigin === '') {
@@ -121,39 +121,39 @@ export const Icon = Class.extend({
 		return img;
 	},
 
-	_setIconStyles(img, name) {
-		const options = this.options;
-		let sizeOption = options[`${name}Size`];
+	_setIconStyles: function (img, name) {
+		var options = this.options;
+		var sizeOption = options[name + 'Size'];
 
 		if (typeof sizeOption === 'number') {
 			sizeOption = [sizeOption, sizeOption];
 		}
 
-		const size = point(sizeOption),
+		var size = point(sizeOption),
 		    anchor = point(name === 'shadow' && options.shadowAnchor || options.iconAnchor ||
 		            size && size.divideBy(2, true));
 
-		img.className = `leaflet-marker-${name} ${options.className || ''}`;
+		img.className = 'leaflet-marker-' + name + ' ' + (options.className || '');
 
 		if (anchor) {
-			img.style.marginLeft = `${-anchor.x}px`;
-			img.style.marginTop  = `${-anchor.y}px`;
+			img.style.marginLeft = (-anchor.x) + 'px';
+			img.style.marginTop  = (-anchor.y) + 'px';
 		}
 
 		if (size) {
-			img.style.width  = `${size.x}px`;
-			img.style.height = `${size.y}px`;
+			img.style.width  = size.x + 'px';
+			img.style.height = size.y + 'px';
 		}
 	},
 
-	_createImg(src, el) {
+	_createImg: function (src, el) {
 		el = el || document.createElement('img');
 		el.src = src;
 		return el;
 	},
 
-	_getIconUrl(name) {
-		return Browser.retina && this.options[`${name}RetinaUrl`] || this.options[`${name}Url`];
+	_getIconUrl: function (name) {
+		return Browser.retina && this.options[name + 'RetinaUrl'] || this.options[name + 'Url'];
 	}
 });
 

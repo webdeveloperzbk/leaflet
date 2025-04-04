@@ -1,29 +1,20 @@
-import {expect} from 'chai';
-import {Map, Popup} from 'leaflet';
-import sinon from 'sinon';
-import UIEventSimulator from 'ui-event-simulator';
-import {createContainer, removeMapContainer} from '../../SpecHelper.js';
+describe("Map.Keyboard", function () {
+	var KEYCODE_LOWERCASE_A = 65;
+	var KEYCODE_ARROW_LEFT = 37;
+	var KEYCODE_ARROW_UP = 38;
+	var KEYCODE_ARROW_RIGHT = 39;
+	var KEYCODE_ARROW_DOWN = 40;
+	var KEYCODE_PLUS = 171;
+	var KEYCODE_MINUS = 173;
+	var KEYCODE_ESC = 27;
 
-describe('Map.Keyboard', () => {
-	const KEYCODE_LOWERCASE_A = 'KeyA';
-	const KEYCODE_ARROW_LEFT = 'ArrowLeft';
-	const KEYCODE_ARROW_UP = 'ArrowUp';
-	const KEYCODE_ARROW_RIGHT = 'ArrowRight';
-	const KEYCODE_ARROW_DOWN = 'ArrowDown';
-	const KEYCODE_PLUS = 'BracketRight';
-	const KEYCODE_MINUS = 'Minus';
-	const KEYCODE_ESC = 'Escape';
+	var map, container;
 
-	let map, container;
-
-	beforeEach(() => {
+	beforeEach(function () {
 		container = createContainer();
-		map = new Map(container, {
+		map = L.map(container, {
 			zoomAnimation: false	// If true, the test has to wait extra 250msec
 		});
-
-		// make keyboard-caused panning instant to cut down on test running time
-		map.panBy = function (offset) { return Map.prototype.panBy.call(this, offset, {animate: false}); };
 
 		map.setView([0, 0], 5);
 
@@ -33,173 +24,203 @@ describe('Map.Keyboard', () => {
 		map.keyboard._onFocus();
 	});
 
-	afterEach(() => {
+	afterEach(function () {
 		removeMapContainer(map, container);
 	});
 
-	describe('arrow keys', () => {
-		it('move the map north', () => {
-			UIEventSimulator.fire('keydown', document,  {code: KEYCODE_ARROW_UP});
-			UIEventSimulator.fire('keypress', document, {code: KEYCODE_ARROW_UP});
-			UIEventSimulator.fire('keyup', document,    {code: KEYCODE_ARROW_UP});
+	describe("arrow keys", function () {
+		it("move the map north", function (done) {
 
-			expect(map.getCenter().lat).to.be.greaterThan(0);
+			happen.keydown(document,  {keyCode: KEYCODE_ARROW_UP});
+			happen.keypress(document, {keyCode: KEYCODE_ARROW_UP});
+			happen.keyup(document,    {keyCode: KEYCODE_ARROW_UP});
+
+			setTimeout(function () {
+				expect(map.getCenter().lat).to.be.greaterThan(0);
+				done();
+			}, 300);
 		});
 
-		it('move the map south', () => {
-			UIEventSimulator.fire('keydown', document,  {code: KEYCODE_ARROW_DOWN});
-			UIEventSimulator.fire('keypress', document, {code: KEYCODE_ARROW_DOWN});
-			UIEventSimulator.fire('keyup', document,    {code: KEYCODE_ARROW_DOWN});
+		it("move the map south", function (done) {
 
-			expect(map.getCenter().lat).to.be.lessThan(0);
+			happen.keydown(document,  {keyCode: KEYCODE_ARROW_DOWN});
+			happen.keypress(document, {keyCode: KEYCODE_ARROW_DOWN});
+			happen.keyup(document,    {keyCode: KEYCODE_ARROW_DOWN});
+
+			setTimeout(function () {
+				expect(map.getCenter().lat).to.be.lessThan(0);
+				done();
+			}, 300);
 		});
 
-		it('move the map west', () => {
-			UIEventSimulator.fire('keydown', document,  {code: KEYCODE_ARROW_LEFT});
-			UIEventSimulator.fire('keypress', document, {code: KEYCODE_ARROW_LEFT});
-			UIEventSimulator.fire('keyup', document,    {code: KEYCODE_ARROW_LEFT});
+		it("move the map west", function (done) {
 
-			expect(map.getCenter().lng).to.be.lessThan(0);
+			happen.keydown(document,  {keyCode: KEYCODE_ARROW_LEFT});
+			happen.keypress(document, {keyCode: KEYCODE_ARROW_LEFT});
+			happen.keyup(document,    {keyCode: KEYCODE_ARROW_LEFT});
+
+			setTimeout(function () {
+				expect(map.getCenter().lng).to.be.lessThan(0);
+				done();
+			}, 300);
 		});
 
-		it('move the map east', () => {
-			UIEventSimulator.fire('keydown', document,  {code: KEYCODE_ARROW_RIGHT});
-			UIEventSimulator.fire('keypress', document, {code: KEYCODE_ARROW_RIGHT});
-			UIEventSimulator.fire('keyup', document,    {code: KEYCODE_ARROW_RIGHT});
+		it("move the map east", function (done) {
 
-			expect(map.getCenter().lng).to.be.greaterThan(0);
+			happen.keydown(document,  {keyCode: KEYCODE_ARROW_RIGHT});
+			happen.keypress(document, {keyCode: KEYCODE_ARROW_RIGHT});
+			happen.keyup(document,    {keyCode: KEYCODE_ARROW_RIGHT});
+
+			setTimeout(function () {
+				expect(map.getCenter().lng).to.be.greaterThan(0);
+				done();
+			}, 300);
 		});
 
-		it('move the map over 180° with worldCopyJump true', () => {
+		it("move the map over 180° with worldCopyJump true", function () {
 			map.panTo([0, 178], {animate: false});
 			map.options.worldCopyJump = true;
 
-			UIEventSimulator.fire('keydown', document,  {code: KEYCODE_ARROW_RIGHT});
-			UIEventSimulator.fire('keypress', document, {code: KEYCODE_ARROW_RIGHT});
-			UIEventSimulator.fire('keyup', document,    {code: KEYCODE_ARROW_RIGHT});
+			happen.keydown(document,  {keyCode: KEYCODE_ARROW_RIGHT});
+			happen.keypress(document, {keyCode: KEYCODE_ARROW_RIGHT});
+			happen.keyup(document,    {keyCode: KEYCODE_ARROW_RIGHT});
 
 			expect(map.getCenter().lng).to.be.lessThan(-178);
 		});
 	});
 
-	describe('plus/minus keys', () => {
-		it('zoom in', () => {
-			UIEventSimulator.fire('keydown', document,  {code: KEYCODE_PLUS});
-			UIEventSimulator.fire('keypress', document, {code: KEYCODE_PLUS});
-			UIEventSimulator.fire('keyup', document,    {code: KEYCODE_PLUS});
+	describe("plus/minus keys", function () {
+		it("zoom in", function (done) {
 
-			expect(map.getZoom()).to.be.greaterThan(5);
+			happen.keydown(document,  {keyCode: KEYCODE_PLUS});
+			happen.keypress(document, {keyCode: KEYCODE_PLUS});
+			happen.keyup(document,    {keyCode: KEYCODE_PLUS});
+
+			setTimeout(function () {
+				expect(map.getZoom()).to.be.greaterThan(5);
+				done();
+			}, 300);
 		});
 
-		it('zoom out', () => {
-			UIEventSimulator.fire('keydown', document,  {code: KEYCODE_MINUS});
-			UIEventSimulator.fire('keypress', document, {code: KEYCODE_MINUS});
-			UIEventSimulator.fire('keyup', document,    {code: KEYCODE_MINUS});
+		it("zoom out", function (done) {
 
-			expect(map.getZoom()).to.be.lessThan(5);
+			happen.keydown(document,  {keyCode: KEYCODE_MINUS});
+			happen.keypress(document, {keyCode: KEYCODE_MINUS});
+			happen.keyup(document,    {keyCode: KEYCODE_MINUS});
+
+			setTimeout(function () {
+				expect(map.getZoom()).to.be.lessThan(5);
+				done();
+			}, 300);
 		});
 	});
 
-	describe('does not move the map if disabled', () => {
-		it('no zoom in', () => {
+	describe("does not move the map if disabled", function () {
+		it("no zoom in", function (done) {
 
 			map.keyboard.disable();
 
-			UIEventSimulator.fire('keydown', document,  {code: KEYCODE_PLUS});
-			UIEventSimulator.fire('keypress', document, {code: KEYCODE_PLUS});
-			UIEventSimulator.fire('keyup', document,    {code: KEYCODE_PLUS});
+			happen.keydown(document,  {keyCode: KEYCODE_PLUS});
+			happen.keypress(document, {keyCode: KEYCODE_PLUS});
+			happen.keyup(document,    {keyCode: KEYCODE_PLUS});
 
-			expect(map.getZoom()).to.eql(5);
+			setTimeout(function () {
+				expect(map.getZoom()).to.eql(5);
+				done();
+			}, 300);
 		});
 
-		it('no move north', () => {
+		it("no move north", function (done) {
 
 			map.keyboard.disable();
 
-			UIEventSimulator.fire('keydown', document,  {code: KEYCODE_ARROW_UP});
-			UIEventSimulator.fire('keypress', document, {code: KEYCODE_ARROW_UP});
-			UIEventSimulator.fire('keyup', document,    {code: KEYCODE_ARROW_UP});
+			happen.keydown(document,  {keyCode: KEYCODE_ARROW_UP});
+			happen.keypress(document, {keyCode: KEYCODE_ARROW_UP});
+			happen.keyup(document,    {keyCode: KEYCODE_ARROW_UP});
 
-			expect(map.getCenter().lat).to.eql(0);
+			setTimeout(function () {
+				expect(map.getCenter().lat).to.eql(0);
+				done();
+			}, 300);
 		});
 	});
 
 
-	describe('popup closing', () => {
-		it('closes a popup when pressing escape', () => {
+	describe("popup closing", function () {
+		it("closes a popup when pressing escape", function () {
 
-			const popup = new Popup().setLatLng([0, 0]).setContent('Null Island');
+			var popup = L.popup().setLatLng([0, 0]).setContent('Null Island');
 			map.openPopup(popup);
 
-			expect(popup.isOpen()).to.be.true;
+			expect(popup.isOpen()).to.be(true);
 
-			UIEventSimulator.fire('keydown', document,  {code: KEYCODE_ESC});
-			UIEventSimulator.fire('keyup', document,    {code: KEYCODE_ESC});
+			happen.keydown(document,  {keyCode: KEYCODE_ESC});
+			happen.keyup(document,    {keyCode: KEYCODE_ESC});
 
-			expect(popup.isOpen()).to.be.false;
+			expect(popup.isOpen()).to.be(false);
 		});
 	});
 
-	describe('popup closing disabled', () => {
-		it('close of popup when pressing escape disabled via options', () => {
+	describe("popup closing disabled", function () {
+		it("close of popup when pressing escape disabled via options", function () {
 
-			const popup = new Popup({closeOnEscapeKey: false}).setLatLng([0, 0]).setContent('Null Island');
+			var popup = L.popup({closeOnEscapeKey: false}).setLatLng([0, 0]).setContent('Null Island');
 			map.openPopup(popup);
 
-			expect(popup.isOpen()).to.be.true;
+			expect(popup.isOpen()).to.be(true);
 
-			UIEventSimulator.fire('keydown', document,  {code: KEYCODE_ESC});
-			UIEventSimulator.fire('keyup', document,    {code: KEYCODE_ESC});
+			happen.keydown(document,  {keyCode: KEYCODE_ESC});
+			happen.keyup(document,    {keyCode: KEYCODE_ESC});
 
-			expect(popup.isOpen()).to.be.true;
+			expect(popup.isOpen()).to.be(true);
 		});
 	});
 
-	describe('keys events binding', () => {
-		it('keypress', (done) => {
-			const keyDownSpy = sinon.spy();
-			const keyPressSpy = sinon.spy();
-			const keyUpSpy = sinon.spy();
+	describe("keys events binding", function () {
+		it("keypress", function (done) {
+			var keyDownSpy = sinon.spy();
+			var keyPressSpy = sinon.spy();
+			var keyUpSpy = sinon.spy();
 
 			map.on('keypress', keyPressSpy);
-			UIEventSimulator.fire('keypress', container, {code: KEYCODE_LOWERCASE_A});
+			happen.keypress(container, {keyCode: KEYCODE_LOWERCASE_A});
 
-			setTimeout(() => {
-				expect(keyDownSpy.called).to.be.false;
-				expect(keyPressSpy.called).to.be.true;
-				expect(keyUpSpy.called).to.be.false;
+			setTimeout(function () {
+				expect(keyDownSpy.called).to.be(false);
+				expect(keyPressSpy.called).to.be.ok();
+				expect(keyUpSpy.called).to.be(false);
 				done();
 			}, 50);
 		});
 
-		it('keydown', (done) => {
-			const keyDownSpy = sinon.spy();
-			const keyPressSpy = sinon.spy();
-			const keyUpSpy = sinon.spy();
+		it("keydown", function (done) {
+			var keyDownSpy = sinon.spy();
+			var keyPressSpy = sinon.spy();
+			var keyUpSpy = sinon.spy();
 
 			map.on('keydown', keyDownSpy);
-			UIEventSimulator.fire('keydown', container, {code: KEYCODE_LOWERCASE_A});
+			happen.keydown(container, {keyCode: KEYCODE_LOWERCASE_A});
 
-			setTimeout(() => {
-				expect(keyDownSpy.called).to.be.true;
-				expect(keyPressSpy.called).to.be.false;
-				expect(keyUpSpy.called).to.be.false;
+			setTimeout(function () {
+				expect(keyDownSpy.called).to.be.ok();
+				expect(keyPressSpy.called).to.be(false);
+				expect(keyUpSpy.called).to.be(false);
 				done();
 			}, 50);
 		});
 
-		it('keyup', (done) => {
-			const keyDownSpy = sinon.spy();
-			const keyPressSpy = sinon.spy();
-			const keyUpSpy = sinon.spy();
+		it("keyup", function (done) {
+			var keyDownSpy = sinon.spy();
+			var keyPressSpy = sinon.spy();
+			var keyUpSpy = sinon.spy();
 
 			map.on('keyup', keyUpSpy);
-			UIEventSimulator.fire('keyup', container, {code: KEYCODE_LOWERCASE_A});
+			happen.keyup(container, {keyCode: KEYCODE_LOWERCASE_A});
 
-			setTimeout(() => {
-				expect(keyDownSpy.called).to.be.false;
-				expect(keyPressSpy.called).to.be.false;
-				expect(keyUpSpy.called).to.be.true;
+			setTimeout(function () {
+				expect(keyDownSpy.called).to.be(false);
+				expect(keyPressSpy.called).to.be(false);
+				expect(keyUpSpy.called).to.be.ok();
 				done();
 			}, 50);
 		});

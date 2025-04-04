@@ -4,12 +4,12 @@ title: WMS example
 ---
 <script type='text/javascript'>
 
-	const map = L.map('map', {
+	var map = L.map('map', {
 		center: [-17, -67],
 		zoom: 3
 	});
 
-	const basemaps = {
+	var basemaps = {
 		Topography: L.tileLayer.wms('http://ows.mundialis.de/services/service?', {
 			layers: 'TOPO-WMS'
 		}),
@@ -27,7 +27,7 @@ title: WMS example
 		})
 	};
 
-	const layerControl = L.control.layers(basemaps, {}, {collapsed: false}).addTo(map);
+	var layerControl = L.control.layers(basemaps, {}, {collapsed: false}).addTo(map);
 
 	basemaps.Topography.addTo(map);
 

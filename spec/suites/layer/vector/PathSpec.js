@@ -1,33 +1,27 @@
-import {expect} from 'chai';
-import {LayerGroup, Map, Polygon, Polyline} from 'leaflet';
-import sinon from 'sinon';
-import UIEventSimulator from 'ui-event-simulator';
-import {createContainer, removeMapContainer} from '../../SpecHelper.js';
+describe('Path', function () {
+	var container, map;
 
-describe('Path', () => {
-	let container, map;
-
-	beforeEach(() => {
+	beforeEach(function () {
 		container = container = createContainer();
-		map = new Map(container);
+		map = L.map(container);
 		map.setView([0, 0], 0);
 	});
 
-	afterEach(() => {
+	afterEach(function () {
 		removeMapContainer(map, container);
 	});
 
 	// The following two tests are skipped, as the ES6-ifycation of Leaflet
-	// means that Path is no longer visible.
-	describe('#bringToBack', () => {
-		it('is a no-op for layers not on a map', () => {
-			const path = new Polyline([[1, 2], [3, 4], [5, 6]]);
+	// means that L.Path is no longer visible.
+	describe('#bringToBack', function () {
+		it('is a no-op for layers not on a map', function () {
+			var path = L.polyline([[1, 2], [3, 4], [5, 6]]);
 			expect(path.bringToBack()).to.equal(path);
 		});
 
-		it('is a no-op for layers no longer in a LayerGroup', () => {
-			const group = new LayerGroup().addTo(map);
-			const path = new Polyline([[1, 2], [3, 4], [5, 6]]).addTo(group);
+		it('is a no-op for layers no longer in a LayerGroup', function () {
+			var group = L.layerGroup().addTo(map);
+			var path = L.polyline([[1, 2], [3, 4], [5, 6]]).addTo(group);
 
 			group.clearLayers();
 
@@ -35,15 +29,15 @@ describe('Path', () => {
 		});
 	});
 
-	describe('#bringToFront', () => {
-		it('is a no-op for layers not on a map', () => {
-			const path = new Polyline([[1, 2], [3, 4], [5, 6]]);
+	describe('#bringToFront', function () {
+		it('is a no-op for layers not on a map', function () {
+			var path = L.polyline([[1, 2], [3, 4], [5, 6]]);
 			expect(path.bringToFront()).to.equal(path);
 		});
 
-		it('is a no-op for layers no longer in a LayerGroup', () => {
-			const group = new LayerGroup().addTo(map);
-			const path = new Polyline([[1, 2], [3, 4], [5, 6]]).addTo(group);
+		it('is a no-op for layers no longer in a LayerGroup', function () {
+			var group = L.layerGroup().addTo(map);
+			var path = L.polyline([[1, 2], [3, 4], [5, 6]]).addTo(group);
 
 			group.clearLayers();
 
@@ -51,58 +45,62 @@ describe('Path', () => {
 		});
 	});
 
-	describe('#events', () => {
-		it('fires click event', () => {
-			const spy = sinon.spy();
-			const layer = new Polygon([[1, 2], [3, 4], [5, 6]]).addTo(map);
+	describe('#events', function () {
+		it('fires click event', function () {
+			var spy = sinon.spy();
+			var layer = L.polygon([[1, 2], [3, 4], [5, 6]]).addTo(map);
 			layer.on('click', spy);
-			UIEventSimulator.fire('click', layer._path);
-			expect(spy.called).to.be.true;
+			happen.click(layer._path);
+			expect(spy.called).to.be.ok();
 		});
 
-		it('propagates click event by default', () => {
-			const spy = sinon.spy();
-			const spy2 = sinon.spy();
-			const mapSpy = sinon.spy();
-			const layer = new Polygon([[1, 2], [3, 4], [5, 6]]).addTo(map);
+		it('propagates click event by default', function () {
+			var spy = sinon.spy();
+			var spy2 = sinon.spy();
+			var mapSpy = sinon.spy();
+			var layer = L.polygon([[1, 2], [3, 4], [5, 6]]).addTo(map);
 			layer.on('click', spy);
 			layer.on('click', spy2);
 			map.on('click', mapSpy);
-			UIEventSimulator.fire('click', layer._path);
-			expect(spy.called).to.be.true;
-			expect(spy2.called).to.be.true;
-			expect(mapSpy.called).to.be.true;
+			happen.click(layer._path);
+			expect(spy.called).to.be.ok();
+			expect(spy2.called).to.be.ok();
+			expect(mapSpy.called).to.be.ok();
 		});
 
-		it('can add a layer while being inside a moveend handler', () => {
-			const zoneLayer = new LayerGroup();
-			let polygon;
+		it('can add a layer while being inside a moveend handler', function (done) {
+			var zoneLayer = L.layerGroup();
+			var polygon;
 			map.addLayer(zoneLayer);
 
-			map.on('moveend', () => {
+			map.on('moveend', function () {
 				zoneLayer.clearLayers();
-				polygon = new Polygon([[1, 2], [3, 4], [5, 6]]);
+				polygon = L.polygon([[1, 2], [3, 4], [5, 6]]);
 				zoneLayer.addLayer(polygon);
 			});
 
 			map.invalidateSize();
 			map.setView([1, 2], 12, {animate: false});
 
-			map.panBy([-260, 0], {animate: false});
-			expect(polygon._parts.length).to.equal(0);
-
-			map.panBy([260, 0], {animate: false});
-			expect(polygon._parts.length).to.equal(1);
+			map.panBy([-260, 0]);
+			setTimeout(function () {
+				expect(polygon._parts.length).to.be(0);
+				map.panBy([260, 0]);
+				setTimeout(function () {
+					expect(polygon._parts.length).to.be(1);
+					done();
+				}, 300);
+			}, 300);
 		});
 
-		it('it should return tolerance with stroke', () => {
-			const path = new Polyline([[1, 2], [3, 4], [5, 6]]);
+		it('it should return tolerance with stroke', function () {
+			var path = L.polyline([[1, 2], [3, 4], [5, 6]]);
 			path.addTo(map);
 			expect(path._clickTolerance()).to.equal(path.options.weight / 2);
 		});
 
-		it('it should return zero tolerance without stroke', () => {
-			const path = new Polyline([[1, 2], [3, 4], [5, 6]]);
+		it('it should return zero tolerance without stroke', function () {
+			var path = L.polyline([[1, 2], [3, 4], [5, 6]]);
 			path.addTo(map);
 			path.options.stroke = false;
 			expect(path._clickTolerance()).to.equal(0);

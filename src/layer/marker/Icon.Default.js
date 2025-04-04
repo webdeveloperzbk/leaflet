@@ -1,5 +1,5 @@
-import {Icon} from './Icon.js';
-import * as DomUtil from '../../dom/DomUtil.js';
+import {Icon} from './Icon';
+import * as DomUtil from '../../dom/DomUtil';
 
 /*
  * @miniclass Icon.Default (Icon)
@@ -17,7 +17,7 @@ import * as DomUtil from '../../dom/DomUtil.js';
  * `L.Marker.prototype.options.icon` with your own icon instead.
  */
 
-export const IconDefault = Icon.extend({
+export var IconDefault = Icon.extend({
 
 	options: {
 		iconUrl:       'marker-icon.png',
@@ -30,39 +30,36 @@ export const IconDefault = Icon.extend({
 		shadowSize:  [41, 41]
 	},
 
-	_getIconUrl(name) {
+	_getIconUrl: function (name) {
 		if (typeof IconDefault.imagePath !== 'string') {	// Deprecated, backwards-compatibility only
 			IconDefault.imagePath = this._detectIconPath();
-		}
-
-		const url = Icon.prototype._getIconUrl.call(this, name);
-		if (!url) {
-			return null;
 		}
 
 		// @option imagePath: String
 		// `Icon.Default` will try to auto-detect the location of the
 		// blue icon images. If you are placing these images in a non-standard
 		// way, set this option to point to the right path.
-		return (this.options.imagePath || IconDefault.imagePath) + url;
+		return (this.options.imagePath || IconDefault.imagePath) + Icon.prototype._getIconUrl.call(this, name);
 	},
 
-	_stripUrl(path) {	// separate function to use in tests
-		const strip = function (str, re, idx) {
-			const match = re.exec(str);
+	_stripUrl: function (path) {	// separate function to use in tests
+		var strip = function (str, re, idx) {
+			var match = re.exec(str);
 			return match && match[idx];
 		};
 		path = strip(path, /^url\((['"])?(.+)\1\)$/, 2);
 		return path && strip(path, /^(.*)marker-icon\.png$/, 1);
 	},
 
-	_detectIconPath() {
-		const el = DomUtil.create('div',  'leaflet-default-icon-path', document.body);
-		const path = this._stripUrl(getComputedStyle(el).backgroundImage);
+	_detectIconPath: function () {
+		var el = DomUtil.create('div',  'leaflet-default-icon-path', document.body);
+		var path = DomUtil.getStyle(el, 'background-image') ||
+		           DomUtil.getStyle(el, 'backgroundImage');	// IE8
 
 		document.body.removeChild(el);
+		path = this._stripUrl(path);
 		if (path) { return path; }
-		const link = document.querySelector('link[href$="leaflet.css"]');
+		var link = document.querySelector('link[href$="leaflet.css"]');
 		if (!link) { return ''; }
 		return link.href.substring(0, link.href.length - 'leaflet.css'.length - 1);
 	}

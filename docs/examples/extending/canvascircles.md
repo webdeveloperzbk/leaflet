@@ -4,20 +4,20 @@ title: CanvasCircles
 ---
 <script type='text/javascript'>
 
-	const map = L.map('map', {
+	var map = L.map('map', {
 		center: [0, 0],
 		zoom: 0
 	});
 
 	L.GridLayer.CanvasCircles = L.GridLayer.extend({
-		createTile(coords) {
-			const tile = document.createElement('canvas');
+		createTile: function (coords) {
+			var tile = document.createElement('canvas');
 
-			const tileSize = this.getTileSize();
+			var tileSize = this.getTileSize();
 			tile.setAttribute('width', tileSize.x);
 			tile.setAttribute('height', tileSize.y);
 
-			const ctx = tile.getContext('2d');
+			var ctx = tile.getContext('2d');
 
 			// Draw whatever is needed in the canvas context
 			// For example, circles which get bigger as we zoom in
@@ -32,7 +32,7 @@ title: CanvasCircles
 		return new L.GridLayer.CanvasCircles(opts);
 	};
 
-	const cavasGridLayer = L.gridLayer.canvasCircles();
+	var cavasGridLayer = L.gridLayer.canvasCircles();
 	map.addLayer(cavasGridLayer);
 
 </script>

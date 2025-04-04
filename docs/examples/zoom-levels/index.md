@@ -42,7 +42,7 @@ Let's have a look at a simple map locked at zoom zero:
 		maxZoom: 0
 	});
 
-	var cartodbAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/attribution">CARTO</a>';
+	var cartodbAttribution = '&copy; <a href="https://skpdi.mosreg.ru">СКПДИ2 ЦРЦТ</a>, &copy; <a href="https://carto.com/attribution">CARTO</a>';
 
 	var positron = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
 		attribution: cartodbAttribution
